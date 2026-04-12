@@ -1103,7 +1103,7 @@ export const zh: Translations = {
     'guide.openai.heading': '如何获取你的 API 密钥：',
     'guide.openai.step1': '访问 platform.openai.com 并登录。',
     'guide.openai.step2': '点击你的名字（右上角）→ "API 密钥"。',
-    'guide.openai.step3': '点击"创建新的密钥"并立即复制（你只能看到一次）。't edit it later).',
+    'guide.openai.step3': '点击"创建新的密钥"并立即复制（你只能看到一次）。',
     'guide.openai.step4': '将密钥（以 sk-... 开头）粘贴到上方的 API 密钥字段中。',
     'guide.openai.tip': '推荐模型：gpt-4o。预算替代：gpt-4o-mini。',
     'guide.gemini.heading': '如何获取你的 API 密钥：',
