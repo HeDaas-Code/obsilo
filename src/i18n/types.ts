@@ -2,7 +2,7 @@
  * i18n Type Definitions
  */
 
-export type Language = 'en' | 'de';
+export type Language = 'en' | 'de' | 'zh';
 
 /** Flat key-value translation map */
 export type Translations = Record<string, string>;
@@ -11,4 +11,5 @@ export type Translations = Record<string, string>;
 export const LANGUAGES: Record<Language, string> = {
     en: 'English',
     de: 'Deutsch',
+    zh: '中文',
 };

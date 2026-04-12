@@ -23,6 +23,7 @@ let currentLang: Language = 'en';
 const localeLoaders: Record<Language, () => Promise<Translations>> = {
     en: () => Promise.resolve(en),
     de: () => import('./locales/de').then((m) => m.de),
+    zh: () => import('./locales/zh').then((m) => m.zh),
 };
 
 // ---------------------------------------------------------------------------
