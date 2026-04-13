@@ -179,11 +179,24 @@ export const GEMINI_MODELS: Record<string, ModelInfo> = {
     },
 };
 
+// MiniMax Models (Anthropic-compatible API)
+// https://www.minimaxi.com/document/price
+export const MINIMAX_MODELS: Record<string, ModelInfo> = {
+    'MiniMax-M2.7': {
+        contextWindow: 200_000,
+        maxTokens: 16_384,
+        supportsTools: true,
+        supportsStreaming: true,
+        displayName: 'MiniMax M2.7',
+    },
+};
+
 // Combined registry for all models
 export const MODEL_REGISTRY: Record<string, ModelInfo> = {
     ...ANTHROPIC_MODELS,
     ...OPENAI_MODELS,
     ...GEMINI_MODELS,
+    ...MINIMAX_MODELS,
 };
 
 /**

@@ -179,7 +179,7 @@ export class ModelConfigModal extends Modal {
         // ── Provider ─────────────────────────────────────────────────────
         const provRow = row(t('modal.modelConfig.provider'));
         const provSel = provRow.createEl('select', { cls: 'mcm-select' });
-        (this.forEmbedding ? EMBEDDING_PROVIDERS : ['anthropic', 'openai', 'gemini', 'github-copilot', 'kilo-gateway', 'ollama', 'lmstudio', 'openrouter', 'azure', 'custom'] as ProviderType[]).forEach((p) => {
+        (this.forEmbedding ? EMBEDDING_PROVIDERS : ['anthropic', 'openai', 'gemini', 'github-copilot', 'kilo-gateway', 'minimax', 'ollama', 'lmstudio', 'openrouter', 'azure', 'custom'] as ProviderType[]).forEach((p) => {
             const opt = provSel.createEl('option', { value: p, text: PROVIDER_LABELS[p] });
             if (p === this.formProvider) opt.selected = true;
         });
@@ -512,14 +512,14 @@ export class ModelConfigModal extends Modal {
         this.apiKeyRow.classList.toggle('agent-u-hidden', p === 'ollama' || p === 'lmstudio' || isCopilot || isKilo);
         if (this.copilotAuthRow) this.copilotAuthRow.classList.toggle('agent-u-hidden', !isCopilot);
         if (this.kiloAuthRow) this.kiloAuthRow.classList.toggle('agent-u-hidden', !isKilo);
-        this.baseUrlRow.classList.toggle('agent-u-hidden', p === 'openai' || p === 'gemini' || p === 'openrouter' || isCopilot || isKilo);
+        this.baseUrlRow.classList.toggle('agent-u-hidden', p === 'openai' || p === 'gemini' || p === 'openrouter' || isCopilot || isKilo || p === 'minimax');
         if (this.apiVersionRow) this.apiVersionRow.classList.toggle('agent-u-hidden', p !== 'azure');
         if (this.ollamaBrowserRow) this.ollamaBrowserRow.classList.toggle('agent-u-hidden', p !== 'ollama');
         if (this.customBrowserRow) this.customBrowserRow.classList.toggle('agent-u-hidden', p !== 'custom' && p !== 'lmstudio');
         // Max Tokens slider always visible (not provider-specific)
         const isCopilotClaude = isCopilot && /^claude/i.test(this.formName);
         if (this.promptCachingRow) this.promptCachingRow.classList.toggle('agent-u-hidden', p !== 'anthropic' && !isCopilotClaude);
-        const supportsThinking = p === 'anthropic' || p === 'openrouter' || isCopilotClaude;
+        const supportsThinking = p === 'anthropic' || p === 'openrouter' || isCopilotClaude || p === 'minimax';
         if (this.thinkingRow) this.thinkingRow.classList.toggle('agent-u-hidden', !supportsThinking);
         if (this.thinkingBudgetRow) this.thinkingBudgetRow.classList.toggle('agent-u-hidden', !supportsThinking || !this.formThinkingEnabled);
 
@@ -531,7 +531,7 @@ export class ModelConfigModal extends Modal {
         // Fetch is available for embedding providers with live APIs (not azure — no list endpoint)
         const hasFetchFetch = this.forEmbedding
             ? (p === 'openai' || p === 'openrouter' || p === 'ollama' || p === 'lmstudio' || p === 'custom' || isCopilot)
-            : (p === 'anthropic' || p === 'openai' || p === 'gemini' || p === 'openrouter' || p === 'lmstudio' || isCopilot || isKilo);
+            : (p === 'anthropic' || p === 'openai' || p === 'gemini' || p === 'openrouter' || p === 'lmstudio' || isCopilot || isKilo || p === 'minimax');
         if (this.suggestRow) {
             this.suggestRow.classList.toggle('agent-u-hidden', !hasStaticSuggestions && !hasFetchFetch);
             if (this.suggestSelEl) {
@@ -567,6 +567,7 @@ export class ModelConfigModal extends Modal {
                 openrouter: t('modal.modelConfig.keyHint.openrouter'),
                 azure: t('modal.modelConfig.keyHint.azure'),
                 custom: t('modal.modelConfig.keyHint.local'),
+                minimax: t('modal.modelConfig.keyHint.minimax'),
             };
             this.apiKeyDescEl.setText(hints[p] ?? '');
         }
@@ -586,6 +587,7 @@ export class ModelConfigModal extends Modal {
                 lmstudio: 'http://localhost:1234',
                 azure: 'https://your-resource.openai.azure.com',
                 custom: 'https://your-openai-compatible-endpoint/v1',
+                minimax: 'https://api.minimaxi.com/anthropic',
             };
             this.baseUrlInputEl.placeholder = placeholders[p] ?? '';
         }
@@ -743,6 +745,14 @@ export class ModelConfigModal extends Modal {
             steps.createEl('li', { text: t('guide.copilot.step2') });
             steps.createEl('li', { text: t('guide.copilot.step3') });
             guide.createDiv({ cls: 'mcm-guide-tip', text: t('guide.copilot.disclaimer') });
+
+        } else if (provider === 'minimax') {
+            guide.createEl('strong', { text: t('guide.minimax.heading') });
+            const steps = guide.createEl('ol', { cls: 'mcm-guide-steps' });
+            steps.createEl('li', { text: t('guide.minimax.step1') });
+            steps.createEl('li', { text: t('guide.minimax.step2') });
+            steps.createEl('li', { text: t('guide.minimax.step3') });
+            guide.createDiv({ cls: 'mcm-guide-tip', text: t('guide.minimax.tip') });
 
         } else if (provider === 'custom') {
             guide.createEl('strong', { text: t('guide.custom.heading') });

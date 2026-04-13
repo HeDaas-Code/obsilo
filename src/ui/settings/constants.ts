@@ -19,6 +19,7 @@ const BRAND_LABELS: Record<string, string> = {
     azure:            'Azure OpenAI',
     'github-copilot': 'GitHub Copilot',
     'kilo-gateway':   'Kilo Gateway',
+    minimax:          'MiniMax',
 };
 
 function getProviderLabels(): Record<string, string> {
@@ -36,6 +37,7 @@ const PROVIDER_COLORS: Record<string, string> = {
     gemini: '#4285f4',
     'github-copilot': '#6e40c9',
     'kilo-gateway':   '#ff6200',
+    minimax:         '#00d4aa',
 };
 
 // Model suggestions shown in the Quick Pick dropdown per provider
@@ -99,6 +101,10 @@ const MODEL_SUGGESTIONS: Record<string, { group: string; id: string; label: stri
     // kilo/auto als einziger Fallback-Eintrag (ADR-042).
     'kilo-gateway': [
         { group: 'Kilo',       id: 'kilo/auto',                label: 'Auto (recommended)' },
+    ],
+    // MiniMax (Anthropic-compatible API)
+    minimax: [
+        { group: 'MiniMax', id: 'MiniMax-M2.7', label: 'MiniMax M2.7' },
     ],
 };
 

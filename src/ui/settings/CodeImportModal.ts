@@ -18,7 +18,7 @@ import { testModelConnection } from './testModelConnection';
 import { t } from '../../i18n';
 
 const PROVIDER_OPTIONS: ProviderType[] = [
-    'anthropic', 'openai', 'azure', 'ollama', 'lmstudio', 'openrouter', 'custom',
+    'anthropic', 'openai', 'azure', 'ollama', 'lmstudio', 'openrouter', 'minimax', 'custom',
 ];
 
 export class CodeImportModal extends Modal {

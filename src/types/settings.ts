@@ -7,7 +7,7 @@
 // Adapted from Obsidian Copilot's CustomModel pattern
 // ---------------------------------------------------------------------------
 
-export type ProviderType = 'anthropic' | 'openai' | 'gemini' | 'ollama' | 'lmstudio' | 'openrouter' | 'azure' | 'custom' | 'github-copilot' | 'kilo-gateway';
+export type ProviderType = 'anthropic' | 'openai' | 'gemini' | 'ollama' | 'lmstudio' | 'openrouter' | 'azure' | 'custom' | 'github-copilot' | 'kilo-gateway' | 'minimax';
 
 export interface CustomModel {
     /** Model identifier used in API calls (e.g. "claude-sonnet-4-5-20250929") */
@@ -47,6 +47,8 @@ export function getDefaultBaseUrlForProvider(provider: ProviderType): string | u
             return 'http://localhost:1234';
         case 'gemini':
             return 'https://generativelanguage.googleapis.com/v1beta/openai';
+        case 'minimax':
+            return 'https://api.minimaxi.com/anthropic';
         default:
             return undefined;
     }
@@ -198,6 +200,17 @@ export const BUILT_IN_MODELS: CustomModel[] = [
         enabled: false,
         isBuiltIn: true,
         maxTokens: 64000,
+    },
+    // MiniMax (Anthropic-compatible API)
+    {
+        name: 'MiniMax-M2.7',
+        provider: 'minimax',
+        displayName: 'MiniMax M2.7',
+        enabled: false,
+        isBuiltIn: true,
+        maxTokens: 16384,
+        thinkingEnabled: true,
+        thinkingBudgetTokens: 10000,
     },
 ];
 

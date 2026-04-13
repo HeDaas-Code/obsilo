@@ -44,7 +44,7 @@ export class ConfigureModelTool extends BaseTool<'configure_model'> {
                     },
                     provider: {
                         type: 'string',
-                        enum: ['anthropic', 'openai', 'ollama', 'lmstudio', 'openrouter', 'azure', 'custom'],
+                        enum: ['anthropic', 'openai', 'ollama', 'lmstudio', 'openrouter', 'azure', 'custom', 'minimax'],
                         description: 'LLM provider (for action "add")',
                     },
                     model_name: {
