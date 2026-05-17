@@ -1,13 +1,13 @@
 ---
-title: 提供商与模型
-description: 所有已支持 AI 提供商的配置指南，包括 Anthropic、OpenAI、Gemini、MiniMax、Copilot、Kilo、Ollama 等。
+title: Providers & Models
+description: Setup guides for all supported AI providers. Anthropic, OpenAI, Google Gemini, Copilot, Kilo, Ollama, and more.
 ---
 
-# 提供商与模型
+# Providers & models
 
-Obsilo 支持 11+ 个 AI 提供商，下面是各提供商的配置说明。
+Obsilo supports 11 AI providers. Setup instructions for each one follow.
 
-所有提供商通用步骤：打开 **Settings > Obsilo Agent > Models**，点击 **"+ add model"**，再选择对应提供商。
+For all providers: open **Settings > Obsilo Agent > Models**, click **"+ add model"**, and select your provider.
 
 ## Cloud providers
 
@@ -76,24 +76,6 @@ Setup:
 2. Go to **Keys** and create a new API key
 3. In Obsilo, select **OpenRouter** as provider, paste the key
 4. Browse or type any model ID (e.g., `anthropic/claude-sonnet-4.6`, `google/gemini-2.5-pro`)
-
-### MiniMax
-
-| | |
-|---|---|
-| What you need | API key from MiniMax platform |
-| Recommended models | MiniMax Text 系列中支持 tool use 的模型 |
-| Embedding | Not available natively |
-
-Setup:
-1. 在 MiniMax 控制台创建 API Key
-2. 在 Obsilo 选择 **MiniMax** 作为 provider，并填入 API Key
-3. 如需自定义，可设置 `https://api.minimaxi.com/anthropic` 兼容端点
-4. 选择模型后即可使用流式对话、函数调用（tool use）与扩展思维
-
-:::tip Latest fork update
-MiniMax provider in this fork now includes multilingual translation support, function calling, and browser-compatible request handling improvements.
-:::
 
 ### Azure OpenAI
 
@@ -210,7 +192,6 @@ This works with any server that implements the OpenAI chat completions API, incl
 | OpenAI | API key | Pay-per-use | Cloud | Yes | Structured output, embeddings |
 | Google Gemini | API key | Free tier + pay | Cloud | No | Free starting point |
 | OpenRouter | API key | Pay-per-use | Cloud | No | Model variety |
-| MiniMax | API key | Pay-per-use | Cloud | No | Multilingual translation + function calling |
 | Azure OpenAI | API key + endpoint | Enterprise | Enterprise tenant | Yes | Compliance |
 | GitHub Copilot | OAuth | Subscription | Cloud | No | Existing subscribers |
 | Kilo Gateway | Device auth / token | Organization | Cloud | No | Team deployments |

@@ -1,5 +1,5 @@
 ---
 layout: home
-title: Obsilo -- Agentic AI for Obsidian
+title: Obsilo 中文增强版
 titleTemplate: false
 ---

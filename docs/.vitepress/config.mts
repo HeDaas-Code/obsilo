@@ -3,138 +3,139 @@ import { withMermaid } from 'vitepress-plugin-mermaid'
 
 const tutorialsSidebar = [
   {
-    text: 'Tutorials',
+    text: '教程',
     items: [
-      { text: 'Installation & Quick Start', link: '/tutorials/getting-started' },
-      { text: 'Your First Conversation', link: '/tutorials/first-conversation' },
-      { text: 'Your First Knowledge Workflow', link: '/tutorials/knowledge-workflow' },
+      { text: '安装与快速开始', link: '/tutorials/getting-started' },
+      { text: '第一次对话', link: '/tutorials/first-conversation' },
+      { text: '第一个知识工作流', link: '/tutorials/knowledge-workflow' },
     ],
   },
 ]
 
 const guidesSidebar = [
   {
-    text: 'Overview',
+    text: '概览',
     items: [
-      { text: 'What Obsilo Can Do', link: '/guides/capabilities' },
+      { text: 'Obsilo 能做什么', link: '/guides/capabilities' },
     ],
   },
   {
-    text: 'Setup',
+    text: '配置',
     items: [
-      { text: 'Choosing a Model', link: '/guides/choosing-a-model' },
+      { text: '如何选择模型', link: '/guides/choosing-a-model' },
     ],
   },
   {
-    text: 'Daily Use',
+    text: '日常使用',
     items: [
-      { text: 'Chat Interface', link: '/guides/chat-interface' },
-      { text: 'Vault Operations', link: '/guides/vault-operations' },
-      { text: 'Knowledge Discovery', link: '/guides/knowledge-discovery' },
-      { text: 'Memory & Personalization', link: '/guides/memory-personalization' },
-      { text: 'Safety & Control', link: '/guides/safety-control' },
+      { text: '聊天界面', link: '/guides/chat-interface' },
+      { text: '库操作', link: '/guides/vault-operations' },
+      { text: '知识发现', link: '/guides/knowledge-discovery' },
+      { text: '记忆与个性化', link: '/guides/memory-personalization' },
+      { text: '安全与控制', link: '/guides/safety-control' },
     ],
   },
   {
-    text: 'Advanced',
+    text: '进阶',
     items: [
-      { text: 'Skills, Rules & Workflows', link: '/guides/skills-rules-workflows' },
-      { text: 'Office Documents', link: '/guides/office-documents' },
-      { text: 'Connectors', link: '/guides/connectors' },
-      { text: 'Multi-Agent & Tasks', link: '/guides/multi-agent' },
+      { text: '技能、规则与工作流', link: '/guides/skills-rules-workflows' },
+      { text: 'Office 文档', link: '/guides/office-documents' },
+      { text: '连接器', link: '/guides/connectors' },
+      { text: '多智能体与任务', link: '/guides/multi-agent' },
     ],
   },
   {
-    text: 'Maintenance',
+    text: '维护',
     items: [
-      { text: 'Vault Health Check', link: '/guides/vault-health' },
+      { text: '库健康检查', link: '/guides/vault-health' },
     ],
   },
 ]
 
 const referenceSidebar = [
   {
-    text: 'Reference',
+    text: '参考',
     items: [
-      { text: 'Tools', link: '/reference/tools' },
-      { text: 'Providers & Models', link: '/reference/providers' },
-      { text: 'Settings', link: '/reference/settings' },
-      { text: 'Troubleshooting', link: '/reference/troubleshooting' },
+      { text: '工具', link: '/reference/tools' },
+      { text: '提供商与模型', link: '/reference/providers' },
+      { text: '设置', link: '/reference/settings' },
+      { text: '故障排查', link: '/reference/troubleshooting' },
     ],
   },
 ]
 
 const conceptsSidebar = [
   {
-    text: 'Fundamentals',
+    text: '基础',
     items: [
-      { text: 'How Obsilo works', link: '/concepts/' },
-      { text: 'The agent loop', link: '/concepts/agent-loop' },
+      { text: 'Obsilo 如何工作', link: '/concepts/' },
+      { text: 'Agent 循环', link: '/concepts/agent-loop' },
     ],
   },
   {
-    text: 'Tools and decisions',
+    text: '工具与决策',
     items: [
-      { text: 'Tool system', link: '/concepts/tool-system' },
-      { text: 'System prompt', link: '/concepts/system-prompt' },
-      { text: 'Modes', link: '/concepts/mode-system' },
+      { text: '工具系统', link: '/concepts/tool-system' },
+      { text: '系统提示词', link: '/concepts/system-prompt' },
+      { text: '模式系统', link: '/concepts/mode-system' },
     ],
   },
   {
-    text: 'Safety',
+    text: '安全',
     items: [
-      { text: 'Governance', link: '/concepts/governance' },
+      { text: '治理', link: '/concepts/governance' },
     ],
   },
   {
-    text: 'Intelligence',
+    text: '智能层',
     items: [
-      { text: 'Knowledge layer', link: '/concepts/knowledge-layer' },
-      { text: 'Memory', link: '/concepts/memory-system' },
-      { text: 'Token optimization', link: '/concepts/token-optimization' },
+      { text: '知识层', link: '/concepts/knowledge-layer' },
+      { text: '记忆系统', link: '/concepts/memory-system' },
+      { text: 'Token 优化', link: '/concepts/token-optimization' },
     ],
   },
   {
-    text: 'Extensibility',
+    text: '可扩展性',
     items: [
-      { text: 'Plugin discovery', link: '/concepts/vault-dna' },
-      { text: 'Self-development', link: '/concepts/self-development' },
-      { text: 'MCP', link: '/concepts/mcp-architecture' },
+      { text: '插件发现', link: '/concepts/vault-dna' },
+      { text: '自我开发', link: '/concepts/self-development' },
+      { text: 'MCP 架构', link: '/concepts/mcp-architecture' },
     ],
   },
   {
-    text: 'Specialized systems',
+    text: '专项系统',
     items: [
-      { text: 'Office pipeline', link: '/concepts/office-pipeline' },
-      { text: 'Provider auth', link: '/concepts/provider-auth' },
-      { text: 'UI architecture', link: '/concepts/ui-architecture' },
+      { text: 'Office 流水线', link: '/concepts/office-pipeline' },
+      { text: '提供商认证', link: '/concepts/provider-auth' },
+      { text: 'UI 架构', link: '/concepts/ui-architecture' },
     ],
   },
 ]
 
 export default withMermaid(
   defineConfig({
-    title: 'Obsilo',
-    description: 'Agentic AI for Obsidian',
+    title: 'Obsilo 中文增强版',
+    description: '面向 Obsidian 的 Agentic AI 中文文档',
     head: [
-      ['meta', { property: 'og:title', content: 'Obsilo - Agentic AI for Obsidian' }],
-      ['meta', { property: 'og:description', content: 'An autonomous AI agent for Obsidian with 49 tools, semantic search, multi-agent workflows, and full safety controls.' }],
+      ['meta', { property: 'og:title', content: 'Obsilo 中文增强版' }],
+      ['meta', { property: 'og:description', content: 'Obsilo 的中文文档站点，英文原始文档位于 /en。' }],
     ],
 
     appearance: 'dark',
     lastUpdated: true,
     cleanUrls: true,
 
-    lang: 'en',
+    lang: 'zh-CN',
 
     themeConfig: {
-      siteTitle: 'Obsilo',
+      siteTitle: 'Obsilo 中文增强版',
       nav: [
-        { text: 'Tutorials', link: '/tutorials/getting-started', activeMatch: '/tutorials/' },
-        { text: 'Guides', link: '/guides/capabilities', activeMatch: '/guides/' },
-        { text: 'Reference', link: '/reference/tools', activeMatch: '/reference/' },
-        { text: 'Concepts', link: '/concepts/', activeMatch: '/concepts/' },
-        { text: 'About', link: '/about' },
+        { text: '教程', link: '/tutorials/getting-started', activeMatch: '/tutorials/' },
+        { text: '指南', link: '/guides/capabilities', activeMatch: '/guides/' },
+        { text: '参考', link: '/reference/tools', activeMatch: '/reference/' },
+        { text: '原理', link: '/concepts/', activeMatch: '/concepts/' },
+        { text: '关于', link: '/about' },
+        { text: 'English', link: '/en/' },
       ],
       sidebar: {
         '/tutorials/': tutorialsSidebar,
@@ -142,16 +143,16 @@ export default withMermaid(
         '/reference/': referenceSidebar,
         '/concepts/': conceptsSidebar,
       },
-      search: {
-        provider: 'local',
-      },
+        search: {
+          provider: 'local',
+        },
       editLink: {
-        pattern: 'https://github.com/pssah4/obsilo/edit/main/docs/:path',
-        text: 'Edit this page on GitHub',
+        pattern: 'https://github.com/HeDaas-Code/obsilo/edit/main/docs/:path',
+        text: '在 GitHub 上编辑此页',
       },
       footer: {
-        message: '<a href="https://github.com/pssah4/obsilo/blob/main/LICENSE">Apache 2.0</a> | <a href="/imprint">Imprint</a>',
-        copyright: 'Provided as-is, without any warranty or liability.',
+        message: '<a href="https://github.com/HeDaas-Code/obsilo/blob/main/LICENSE">Apache 2.0</a> | <a href="/imprint">法律声明</a>',
+        copyright: '按“现状”提供，不附带任何担保或责任。',
       },
     },
 
