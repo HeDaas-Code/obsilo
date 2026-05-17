@@ -1,78 +1,74 @@
 ---
-title: Office Pipeline
-description: How Obsilo creates and reads PPTX, DOCX, XLSX, and PDF files inside your vault.
+title: Office 管道
+description: Obsilo 如何在你的知识库中创建和读取 PPTX、DOCX、XLSX 和 PDF 文件。
 ---
 
-# Office pipeline
+# Office 管道
 
-Obsilo can create PowerPoint, Word, and Excel files directly in your vault. It can also read them, extracting text and structure from office documents to use as context in conversations.
+Obsilo 可以直接在知识库中创建 PowerPoint、Word 和 Excel 文件。它也可以读取这些文件，从 Office 文档中提取文本和结构，用于对话上下文。
 
-## Document creation
+## 文档创建
 
-Three built-in tools handle file creation: `create_pptx`, `create_docx`, and `create_xlsx`. Each writes binary output to the vault using a shared `writeBinaryToVault()` utility that enforces path-traversal protection.
+三个内置工具处理文件创建：`create_pptx`、`create_docx` 和 `create_xlsx`。每个工具都使用共享的 `writeBinaryToVault()` 工具将二进制输出写入知识库，并带有路径遍历保护。
 
-DOCX and XLSX generation are straightforward. PPTX is where most of the complexity lives, because presentations have visual structure that matters.
+DOCX 和 XLSX 的生成比较直接。PPTX 是复杂性最高的部分，因为演示文稿有重要的视觉结构。
 
-## Two PPTX modes
+## 两种 PPTX 模式
 
 ```mermaid
 flowchart TD
-    R[Request] --> D{Template available?}
-    D -->|No| A[Ad-hoc mode: PptxGenJS]
-    D -->|Yes| T[Template mode: pptx-automizer]
-    A --> F[PPTX file]
+    R[请求] --> D{有模板？}
+    D -->|无| A[临时模式：PptxGenJS]
+    D -->|有| T[模板模式：pptx-automizer]
+    A --> F[PPTX 文件]
     T --> F
 ```
 
-Ad-hoc mode builds slides from scratch using PptxGenJS. The agent specifies slide content (titles, bullets, images) and the library generates a clean but generic presentation. The output uses sensible defaults for fonts and colors but won't match your company's brand guidelines. Good for quick drafts or when no corporate template exists.
+**临时模式**：使用 PptxGenJS 从头构建幻灯片。Agent 指定幻灯片内容（标题、项目符号、图片），库生成一个干净但通用的演示文稿。适合快速草稿或没有公司模板时。
 
-Template mode uses existing `.pptx` templates through pptx-automizer. Your corporate slide deck becomes the foundation. The agent fills in content while preserving the template's design, fonts, and layout. This is the mode that produces presentation-quality output.
+**模板模式**：使用现有的 `.pptx` 模板文件，通过 pptx-automizer 填充内容。企业幻灯片模板成为基础，Agent 在保留模板设计、字体和布局的同时填入内容。这是生成演示质量输出的模式。
 
-Template mode depends on a catalog. The `TemplateCatalogLoader` (`src/core/office/pptx/TemplateCatalog.ts`) resolves templates from two locations: bundled defaults (executive, modern, minimal) and user-provided themes stored in `.obsilo/themes/{theme_name}/`. Each catalog is a JSON file describing available slide layouts, their shapes, and content capacity. User themes take priority over bundled ones, so you can override a default theme by creating one with the same name.
+模板模式依赖一个目录。`TemplateCatalogLoader`（`src/core/office/pptx/TemplateCatalog.ts`）从两个位置解析模板：捆绑的默认模板（executive、modern、minimal）和存储在 `.obsilo/themes/{theme_name}/` 中的用户提供的 theme。每个目录是一个 JSON 文件，描述可用的幻灯片布局、它们的形状和内容容量。用户 theme 优先于捆绑的 theme，所以你可以用相同名称创建一个 theme 来覆盖默认 theme。
 
-## The plan_presentation step
+## plan_presentation 步骤
 
-The critical part of the PPTX pipeline is what happens before generation. Raw source material (meeting notes, research, bullet points) must be transformed into structured slide content. Asking the agent to do this inline, while managing tool calls and conversation flow, produces mediocre results.
+PPTX 管道中最关键的部分发生在生成之前。原始材料（会议记录、研究内容、项目符号）必须转化为结构化的幻灯片内容。
 
-The `plan_presentation` tool (`src/core/tools/vault/PlanPresentationTool.ts`) solves this with a dedicated internal LLM call. It's a tool that calls the LLM itself, separate from the main conversation:
+`plan_presentation` 工具（`src/core/tools/vault/PlanPresentationTool.ts`）通过专用内部 LLM 调用来解决这个问题：
 
-1. Read the source material and the template catalog
-2. Extract key messages from the source
-3. Select appropriate slide types from the catalog
-4. Generate content for every non-decorative shape on each slide
-5. Validate the plan against the catalog (do all required shapes have content? are shape names valid? are placeholders resolved?)
+1. 读取源材料和模板目录
+2. 从源材料中提取关键信息
+3. 从目录中选择合适的幻灯片类型
+4. 为每个幻灯片上的每个非装饰性形状生成内容
+5. 根据目录验证计划（所有必需形状都有内容吗？形状名称有效吗？占位符都解析了吗？）
 
-The output is a `DeckPlan`, a structured JSON object that `create_pptx` consumes directly. Separating planning from generation lets the agent review and adjust the plan before committing to a file. You can ask the agent to show the plan, request changes ("move the financials section earlier", "add a slide about timeline"), and only generate the file once the plan looks right.
+输出是一个 `DeckPlan`，`create_pptx` 直接消费它。将计划与生成分离让你可以在提交文件之前审查和调整计划。
 
-The internal LLM call is constrained: it receives the source material and the catalog as structured input, and must produce output conforming to the DeckPlan schema. This is more reliable than asking the conversational LLM to produce the same structure inline, because the constrained call has a single focused task without conversation history taking up context.
+## 模板目录结构
 
-## Template catalog structure
+目录描述了每种幻灯片布局提供什么。对于每种幻灯片类型，目录列出：
 
-Catalogs describe what each slide layout offers. For each slide type, the catalog lists:
+- 可用的形状及其名称和内容类型（文本、项目符号列表、图片占位符、图表数据）
+- 必须有内容的必需形状
+- 形状组（视觉上属于一起的元素）
+- 特殊角色，如章节编号或页面指示器
 
-- Available shapes with their names and content types (text, bullet list, image placeholder, chart data)
-- Required shapes that must have content
-- Shape groups (elements that belong together visually)
-- Special roles like section numbers or page indicators
+## 文档解析
 
-The agent selects slide types based on the content it needs to present. A "key findings" section might use a title + two-column layout, while a data summary might use a chart slide.
+读取 Office 文件是相反的方向。`parseDocument` 函数（`src/core/document-parsers/parseDocument.ts`）根据文件扩展名路由到专用解析器：
 
-## Document parsing
+| 格式 | 解析器 | 提取内容 |
+|------|--------|----------|
+| PPTX/POTX | `PptxParser` | 幻灯片文本、演讲者备注、幻灯片顺序 |
+| DOCX | `DocxParser` | 段落、标题、表格 |
+| XLSX | `XlsxParser` | 工作表名称、单元格数据、公式 |
+| PDF | `PdfParser` | 页面文本、基本结构 |
+| CSV/JSON | `CsvParser` / `parseJson` | 结构化数据 |
 
-Reading office files is the reverse direction. The `parseDocument` function (`src/core/document-parsers/parseDocument.ts`) routes by file extension to specialized parsers:
+解析后的内容以结构化文本形式返回，Agent 可以用作上下文。Agent 通过提取的文本读取 50 页的演示文稿或复杂的电子表格，而不是原始二进制文件。
 
-| Format | Parser | What it extracts |
-|--------|--------|-----------------|
-| PPTX/POTX | `PptxParser` | Slide text, speaker notes, slide order |
-| DOCX | `DocxParser` | Paragraphs, headings, tables |
-| XLSX | `XlsxParser` | Sheet names, cell data, formulas |
-| PDF | `PdfParser` | Page text, basic structure |
-| CSV/JSON | `CsvParser` / `parseJson` | Structured data |
+文档解析在两个地方使用：`read_document` 工具（当 Agent 明确读取文件时）和 `AttachmentHandler`（当你将文件拖入聊天时）。
 
-Parsed content returns as structured text the agent can use as context. The agent reads a 50-slide presentation or complex spreadsheet through the extracted text, not the raw binary.
+## 为什么二进制工具无法在沙箱中运行
 
-Document parsing is used in two places: the `read_document` tool (when the agent explicitly reads a file) and the `AttachmentHandler` (when you drag a file into the chat).
-
-## Why binary tools can't run in the sandbox
-
-Office file generation requires libraries like JSZip that work with Buffer and stream objects. The sandboxed environment (used for dynamic tools) doesn't have access to these Node.js primitives. That's why `create_pptx`, `create_docx`, and `create_xlsx` are built-in tools running in the plugin's main process rather than sandbox-compatible dynamic tools. The same applies to document parsing, since the parsers need ArrayBuffer processing that only works in the main process.
+Office 文件生成需要像 JSZip 这样处理 Buffer 和流对象的库。沙箱环境（用于动态工具）无法访问这些 Node.js 原语。这就是为什么 `create_pptx`、`create_docx` 和 `create_xlsx` 是内置工具，在插件的主进程中运行，而不是沙箱兼容的动态工具。文档解析也是如此，因为解析器需要只有在主进程中才能工作的 ArrayBuffer 处理。

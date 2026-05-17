@@ -1,88 +1,88 @@
 ---
-title: Token Optimization
-description: How Obsilo reduces token costs by up to 90% through fast paths, cache alignment, and context externalization.
+title: Token 优化
+description: Obsilo 如何通过快速路径、KV 缓存对齐和上下文外置，将 token 成本降低高达 90%。
 ---
 
-# Token optimization
+# Token 优化
 
-A naive agent loop is expensive. The agent sends a system prompt, all tool definitions, the full conversation history, and every tool result to the LLM on every turn. For a simple "find and summarize" task, that can add up to 634,000 input tokens.
+一个朴素的 agent 循环成本高昂。Agent 在每一轮都会将系统提示词、所有工具定义、完整的对话历史以及每个工具的结果发送给 LLM。对于一个简单的"查找并总结"任务，这可能累计达到 634,000 个输入 token。
 
-Obsilo uses three complementary strategies that brought this down to 60,000 tokens for the same task. That is a 90% reduction.
+Obsilo 使用三种互补策略，将同一任务的 token 消耗降低到 60,000 个。降幅达到 90%。
 
-## The cost problem
+## 成本问题
 
-Here is what happens without optimization:
+以下是无优化时的状况：
 
-1. The system prompt includes 49 tool definitions (each with input schemas, descriptions, examples)
-2. Every tool result stays in the conversation history
-3. The LLM re-reads everything on every turn, even parts that have not changed
-4. A task that could be done in 2 tool calls takes 8 because the agent plans one step at a time
+1. 系统提示词包含 49 个工具定义（每个都包含输入模式、描述、示例）
+2. 每个工具的结果都保留在对话历史中
+3. LLM 在每一轮都重新读取所有内容，即使部分内容没有变化
+4. 一个本可以用 2 次工具调用完成的任务需要 8 次，因为 agent 每次只能规划一个步骤
 
-With models like GitHub Copilot's Sonnet that have a 168K context limit, complex tasks would simply fail because the context overflowed.
+对于 GitHub Copilot 的 Sonnet 这样只有 168K 上下文限制的模型，复杂任务会直接因为上下文溢出而失败。
 
-## Strategy 1: Fast path execution
+## 策略一：快速路径执行
 
-When the agent has seen a similar task before, it skips the iterative loop entirely.
+当 agent 曾见过类似任务时，它会完全跳过迭代循环。
 
-**How it works:**
+**工作原理：**
 
-1. The `FastPathExecutor` checks if any learned recipe matches the current request
-2. If a match is found, it makes one planning call to the LLM with the recipe and the specific inputs
-3. The LLM returns a batch of tool calls (not one at a time, but all at once)
-4. Obsilo executes them deterministically without further LLM calls
-5. One final LLM call formats the result
+1. `FastPathExecutor` 检查是否有已学习的配方匹配当前请求
+2. 如果找到匹配，它会带着配方和具体输入向 LLM 发起一次规划调用
+3. LLM 一次性返回一批工具调用（不是一次一个，而是全部同时返回）
+4. Obsilo 无需进一步 LLM 调用即可确定性执行这些调用
+5. 最后再调用一次 LLM 来格式化结果
 
-**Result:** 2-3 LLM calls instead of 8. The agent learns new recipes automatically from successful task completions.
+**结果：** 2-3 次 LLM 调用，而非 8 次。Agent 会从成功的任务完成中自动学习新配方。
 
-If the fast path fails or no recipe matches, Obsilo falls back to the normal agent loop. Nothing breaks.
+如果快速路径失败或没有匹配的配方，Obsilo 会回退到正常的 agent 循环。不会出问题。
 
-## Strategy 2: KV-cache-aligned prompt
+## 策略二：KV 缓存对齐的提示词
 
-LLM providers cache the key-value pairs computed from the prompt prefix. If the same prefix appears again, those computations are reused and you pay less.
+LLM 提供商会缓存从提示词前缀计算出的键值对。如果相同的前缀再次出现，这些计算会被复用，费用也会更低。
 
-Obsilo arranges the system prompt so stable content comes first and volatile content comes last:
+Obsilo 排列系统提示词的方式是：稳定内容在前，易变内容在后：
 
-**Stable sections (rarely change):**
-1. Role definition
-2. Tool definitions
-3. Rules and skills
-4. Mode instructions
+**稳定部分（很少变化）：**
+1. 角色定义
+2. 工具定义
+3. 规则和技能
+4. 模式指令
 
-**Volatile sections (change every turn):**
-5. Active file context
-6. Memory
-7. Current date and time
+**易变部分（每轮都会变化）：**
+5. 活跃文件上下文
+6. 记忆
+7. 当前日期和时间
 
-Because tools, rules, and mode definitions do not change between turns, the LLM can cache them. This is provider-agnostic: Anthropic uses explicit cache markers, OpenAI and Gemini do implicit prefix caching.
+由于工具、规则和模式定义在轮次之间不会变化，LLM 可以缓存它们。这与提供商无关：Anthropic 使用显式缓存标记，OpenAI 和 Gemini 做隐式前缀缓存。
 
-## Strategy 3: Context externalization
+## 策略三：上下文外置
 
-When a tool returns a large result (say, the content of a 200-line note), keeping it in the conversation history means the LLM re-reads it on every subsequent turn.
+当工具返回大量结果时（比如一个 200 行笔记的内容），如果将其保留在对话历史中，意味着 LLM 在后续每一轮都会重新读取它。
 
-The `ResultExternalizer` catches results larger than 4,000 characters, writes them to a temporary file in `.obsidian-agent/context/`, and replaces the result with a compact reference:
+`ResultExternalizer` 会捕获超过 4,000 字符的结果，将它们写入 `.obsidian-agent/context/` 下的临时文件，并用紧凑的引用替换结果：
 
 ```
 <context_ref path=".obsidian-agent/context/abc123.md" lines="215"/>
 ```
 
-If the agent needs the content later, it reads it with `read_file`. Most of the time it does not need to, because it already processed the result on the turn it was generated.
+如果 agent 后续需要这些内容，它会使用 `read_file` 来读取。大多数时候它不需要这样做，因为它在生成结果的当轮就已经处理完了。
 
-## Combined effect
+## 综合效果
 
-| Scenario | Before | After | Reduction |
+| 场景 | 优化前 | 优化后 | 降幅 |
 |----------|--------|-------|-----------|
-| Simple task (search + summarize) | 634K tokens | 60K tokens | 90% |
-| Complex task (multi-step vault work) | 800K+ tokens | 257K tokens | 68% |
-| GitHub Copilot (168K limit) | Overflow error | Works | N/A |
+| 简单任务（搜索 + 总结） | 634K token | 60K token | 90% |
+| 复杂任务（多步骤保险库操作） | 800K+ token | 257K token | 68% |
+| GitHub Copilot（168K 限制） | 溢出错误 | 正常运行 | 不适用 |
 
-## Trade-offs
+## 权衡
 
-- Fast path requires learning time. New task patterns run through the normal loop until a recipe is built.
-- Externalized results add file I/O. For very short conversations (1-2 turns), the overhead is not worth it.
-- KV-cache hits depend on the provider. Some providers do not support caching at all. The prompt structure still works, it just does not save money.
+- 快速路径需要学习时间。新的任务模式会通过正常循环执行，直到配方建立起来。
+- 外置结果会增加文件 I/O。对于非常短的对话（1-2 轮），这个开销不值得。
+- KV 缓存命中取决于提供商。有些提供商根本不支持缓存。提示词结构仍然有效，只是不会省钱。
 
-## Related
+## 相关
 
-- [The agent loop](/concepts/agent-loop): How the core loop works and where fast path fits in
-- [System prompt](/concepts/system-prompt): The prompt section ordering in detail
-- [Memory system](/concepts/memory-system): How recipes are learned and matched
+- [Agent 循环](/concepts/agent-loop)：核心循环如何工作以及快速路径如何融入
+- [系统提示词](/concepts/system-prompt)：提示词部分排序的详细说明
+- [记忆系统](/concepts/memory-system)：配方如何学习和匹配

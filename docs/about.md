@@ -1,10 +1,9 @@
 ---
 title: 关于
-description: Obsilo 中文增强版 fork 说明与项目背景。
+description: Obsilo 中文增强版介绍与项目背景
 ---
 
-> 本站点为 `HeDaas-Code/obsilo` 维护的 **Obsilo 中文增强版** 文档。  
-> 原始英文文档已保留在 `/en` 路径与 `docs/en` 目录中。
+# 关于
 
 <div style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap; margin-bottom: 2rem;">
   <img src="/assets/AD7E0394-7084-4038-99B8-90C331AEF7BF_1_105_c.jpeg" alt="Sebastian Hanke" style="width: 140px; height: 140px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
@@ -19,27 +18,25 @@ description: Obsilo 中文增强版 fork 说明与项目背景。
   </div>
 </div>
 
----
+## 关于我
 
-## About me
+我是 Sebastian，德国产品与技术通才。过去大部分时间从事战略、产品开发和应用技术方面的工作，有时是早期项目，有时是成熟团队。
 
-I'm Sebastian, a product and technology generalist based in Germany. I've spent most of my career working on strategy, product development, and applied technology, sometimes with early-stage projects, sometimes with established teams.
+对知识工作、思维工具和 AI 的兴趣将我引向了 Obsidian。在此基础上，我构建了 Obsilo Agent：一个为你的知识库打造的自主式 AI 层。它可以在你选择的本地或远程模型上运行，尊重你的隐私，并且完全开源。
 
-My interest in knowledge work, thinking tools, and AI brought me to Obsidian. From there I built Obsilo Agent: an autonomous AI layer for your vault. It runs on local or remote models of your choice, respects your privacy, and is fully open source.
+## 为什么做 Obsilo Agent
 
-## Why Obsilo Agent
+我想要一个**运行在我的知识系统内部**的 AI，而不是在它旁边的 AI。一个能读取我的笔记、遵循我的工作流程、真正做事情而不只是回答问题的 AI。在 VS Code 中使用 Kilo Code 的经历让我看到了在另一个工具内部运行时的 agentic 循环应该是什么样子。Obsilo 就是将这个想法应用到知识工作上的产物。
 
-I wanted an AI that works *inside* my knowledge system, not next to it. One that can read my notes, follow my workflows, and actually do things, not just answer questions. Working with Kilo Code in VS Code showed me what agentic loops should look like when operating inside another tool. Obsilo is that idea applied to knowledge work.
+## 获取联系
 
-## Get in touch
+我为自己、为自己的需求构建了 Obsilo。我乐于接受反馈，也很感谢建议，但我无法承诺任何事情。
 
-I built Obsilo for myself, for my own needs. I'm open to feedback and grateful for suggestions, but I can't promise anything.
+最好的联系方式是 [LinkedIn](https://www.linkedin.com/in/sebastianhanke/) 或在 [GitHub](https://github.com/pssah4/obsilo) 上开讨论区。商业咨询或合作请致信 [sebastian@obsilo.ai](mailto:sebastian@obsilo.ai)。
 
-The best way to reach me is via [LinkedIn](https://www.linkedin.com/in/sebastianhanke/) or by opening a discussion on [GitHub](https://github.com/pssah4/obsilo). For commercial enquiries or collaborations: [sebastian@obsilo.ai](mailto:sebastian@obsilo.ai).
+## 支持项目
 
-## Support the project
-
-Obsilo is and will remain open source and free. I build and maintain it independently in my spare time. If it saves you time, consider supporting development with a small monthly contribution. Completely optional, always appreciated.
+Obsilo 是且将继续是开源和免费的。我在业余时间独立构建和维护它。如果它为你节省了时间，考虑用小额月捐支持开发。完全可选，永远感激。
 
 <a href="https://buymeacoffee.com/sebastianhanke" target="_blank" rel="noopener noreferrer">
   <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 50px; margin-top: 0.5rem;">

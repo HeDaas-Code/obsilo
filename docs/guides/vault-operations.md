@@ -1,134 +1,134 @@
 ---
-title: Vault Operations
-description: How Obsilo reads, writes, searches, and structures your vault.
+title: 保险库操作
+description: 了解 Obsilo 如何读取、写入、搜索和组织您的保险库。
 ---
 
-# Vault Operations
+# 保险库操作
 
-Obsilo can read, write, search, and organize files across your entire vault.
+Obsilo 可以跨整个保险库读取、写入、搜索和组织文件。
 
-## How it works
+## 工作原理
 
-The agent does not access your vault directly. It uses tools: small, single-purpose functions. When you ask the agent to find a note or create a file, it picks the right tools and calls them on your behalf.
+Agent 不会直接访问您的保险库。它使用工具：小型单一用途的函数。当您要求 Agent 查找笔记或创建文件时，它会选择合适的工具并代表您调用它们。
 
-Every tool call is visible in the [activity block](/guides/chat-interface#activity-blocks), and write operations require [approval](/guides/safety-control) unless you enable auto-approve.
+每次工具调用都会显示在[活动块](/guides/chat-interface#activity-blocks)中，写入操作需要[批准](/guides/safety-control)，除非您启用了自动批准。
 
-## Reading your vault
+## 读取保险库
 
-These tools let the agent look at your files without changing anything. Available in both Ask and Agent mode.
+这些工具让 Agent 可以查看您的文件而不做任何更改。在"提问"和"Agent"模式下均可用。
 
-| Tool | What it does |
-|------|-------------|
-| **read_file** | Opens a note and reads its content |
-| **list_files** | Lists files and folders in a given path |
-| **search_files** | Finds notes by text content (keyword search) |
-| **search_by_tag** | Finds all notes with a specific tag |
-| **get_frontmatter** | Reads the YAML metadata at the top of a note |
-| **get_linked_notes** | Follows wikilinks and backlinks from a note |
-| **get_daily_note** | Opens today's daily note (or a specific date) |
+| 工具 | 功能 |
+|------|------|
+| **read_file** | 打开笔记并读取其内容 |
+| **list_files** | 列出给定路径下的文件和文件夹 |
+| **search_files** | 通过文本内容查找笔记（关键词搜索） |
+| **search_by_tag** | 查找带有特定标签的所有笔记 |
+| **get_frontmatter** | 读取笔记顶部的 YAML 元数据 |
+| **get_linked_notes** | 跟踪笔记中的维基链接和反向链接 |
+| **get_daily_note** | 打开今天的日记（或指定日期） |
 
-### Examples
+### 示例
 
-- *"What notes do I have in the Projects folder?"* (uses `list_files`)
-- *"Find everything I wrote about client onboarding"* (uses `search_files`)
-- *"Show me all notes tagged #review"* (uses `search_by_tag`)
-- *"What links to my quarterly goals note?"* (uses `get_linked_notes`)
-- *"Read today's daily note"* (uses `get_daily_note`)
+- *"我在 Projects 文件夹里有哪些笔记？"*（使用 `list_files`）
+- *"查找我写的所有关于客户入职的内容"*（使用 `search_files`）
+- *"显示所有带有 #review 标签的笔记"*（使用 `search_by_tag`）
+- *"哪些笔记链接到我的季度目标笔记？"*（使用 `get_linked_notes`）
+- *"阅读今天的日记"*（使用 `get_daily_note`）
 
-:::tip Semantic search goes further
-Keyword search matches exact words. To find notes by meaning (e.g., "notes about improving sleep" finding a note titled "Evening Routine"), see [Knowledge Discovery](/guides/knowledge-discovery).
+:::tip 语义搜索更进一步
+关键词搜索匹配精确词汇。按含义查找笔记（例如，"关于改善睡眠的笔记"能找到一个标题为"晚间习惯"的笔记），请参阅[知识发现](/guides/knowledge-discovery)。
 :::
 
-## Writing and editing
+## 写入和编辑
 
-These tools modify your vault. Only available in Agent mode and require approval by default.
+这些工具会修改您的保险库。仅在 Agent 模式下可用，默认需要批准。
 
-| Tool | What it does |
-|------|-------------|
-| **write_file** | Creates a new note or replaces an existing one |
-| **edit_file** | Makes targeted changes to part of a note |
-| **append_to_file** | Adds content to the end of an existing note |
-| **update_frontmatter** | Changes YAML metadata fields |
+| 工具 | 功能 |
+|------|------|
+| **write_file** | 创建新笔记或替换现有笔记 |
+| **edit_file** | 对笔记的某部分进行定向修改 |
+| **append_to_file** | 将内容添加到现有笔记的末尾 |
+| **update_frontmatter** | 修改 YAML 元数据字段 |
 
-### Examples
+### 示例
 
-- *"Create a note summarizing our Q1 results"* (uses `write_file`)
-- *"Replace the second paragraph in @project-brief with a shorter version"* (uses `edit_file`)
-- *"Add today's action items to @task-list"* (uses `append_to_file`)
-- *"Set the status field to 'complete' in @project-brief"* (uses `update_frontmatter`)
+- *"创建一条总结 Q1 业绩的笔记"*（使用 `write_file`）
+- *"用较短版本替换 @project-brief 中的第二段"*（使用 `edit_file`）
+- *"将今天的待办事项添加到 @task-list"*（使用 `append_to_file`）
+- *"将 @project-brief 中的状态字段设置为'已完成'*（使用 `update_frontmatter`）
 
-:::info Checkpoints protect your files
-Before any write operation, Obsilo saves a snapshot. If something goes wrong, click Undo in the [undo bar](/guides/chat-interface#the-undo-bar) to restore the original.
+:::info 检查点保护您的文件
+在任何写入操作之前，Obsilo 都会保存快照。如果出现问题，点击[撤销栏](/guides/chat-interface#the-undo-bar)中的"撤销"来恢复原始文件。
 :::
 
-## Organizing files and folders
+## 整理文件和文件夹
 
-These tools help you restructure your vault.
+这些工具帮助您重组保险库结构。
 
-| Tool | What it does |
-|------|-------------|
-| **create_folder** | Creates a new folder (including nested paths) |
-| **move_file** | Moves a note to a different folder or renames it |
-| **delete_file** | Sends a note to the Obsidian trash |
+| 工具 | 功能 |
+|------|------|
+| **create_folder** | 创建新文件夹（包括嵌套路径） |
+| **move_file** | 将笔记移动到其他文件夹或重命名 |
+| **delete_file** | 将笔记发送到 Obsidian 垃圾箱 |
 
-### Examples
+### 示例
 
-- *"Create an Archive/2025 folder and move all notes tagged #archived there"* (uses `create_folder` + `move_file`)
-- *"Rename @old-project-name to new-project-name"* (uses `move_file`)
-- *"Delete all empty notes in the Inbox folder"* (uses `delete_file`)
+- *"创建 Archive/2025 文件夹并将所有带有 #archived 标签的笔记移至此处"*（使用 `create_folder` + `move_file`）
+- *"将 @old-project-name 重命名为 new-project-name"*（使用 `move_file`）
+- *"删除 Inbox 文件夹中的所有空笔记"*（使用 `delete_file`）
 
-:::warning Deletion uses Obsidian trash
-Deleted files go to Obsidian's trash (`.trash` folder), not permanent deletion. You can recover them from there.
+:::warning 删除使用 Obsidian 垃圾箱
+删除的文件会进入 Obsidian 的垃圾箱（`.trash` 文件夹），而不是永久删除。您可以从那里恢复它们。
 :::
 
-## Vault statistics
+## 保险库统计
 
-The agent can give you an overview of your vault using **get_vault_stats**:
+Agent 可以使用 **get_vault_stats** 为您提供保险库概览：
 
-- Total number of notes, folders, and attachments
-- Vault size
-- Tag distribution
-- Recently modified files
+- 笔记、文件夹和附件的总数
+- 保险库大小
+- 标签分布
+- 最近修改的文件
 
-**Example:** *"Give me a summary of my vault: how many notes, what are the most used tags?"*
+**示例：** *"给我一个保险库摘要：有多少笔记，使用最多的标签是什么？"*
 
-## Canvas and visual maps
+## Canvas 和可视化图
 
-Obsilo can create visual representations of your notes and their relationships.
+Obsilo 可以创建笔记及其关系的可视化表示。
 
-| Tool | What it does |
-|------|-------------|
-| **generate_canvas** | Creates an Obsidian Canvas (.canvas) with cards and connections |
-| **create_excalidraw** | Creates an Excalidraw drawing (requires the Excalidraw plugin) |
+| 工具 | 功能 |
+|------|------|
+| **generate_canvas** | 创建 Obsidian Canvas（.canvas）文件，包含卡片和连接 |
+| **create_excalidraw** | 创建 Excalidraw 绘图（需要 Excalidraw 插件） |
 
-**Example:** *"Create a canvas map showing all notes in the Projects folder and their connections"*
+**示例：** *"创建一张 Canvas 图，显示 Projects 文件夹中的所有笔记及其连接关系"*
 
-## Bases (structured data)
+## Bases（结构化数据）
 
-Bases let you work with your notes as structured data, similar to a database view.
+Bases 让您将笔记作为结构化数据来操作，类似于数据库视图。
 
-| Tool | What it does |
-|------|-------------|
-| **create_base** | Creates a new Base from notes matching certain criteria |
-| **query_base** | Queries an existing Base with filters and sorting |
-| **update_base** | Modifies entries in a Base |
+| 工具 | 功能 |
+|------|------|
+| **create_base** | 从符合特定条件的笔记创建新 Base |
+| **query_base** | 使用过滤器和排序查询现有 Base |
+| **update_base** | 修改 Base 中的条目 |
 
-**Example:** *"Create a Base of all notes tagged #book with columns for author, rating, and status from frontmatter"*
+**示例：** *"创建一个包含所有带有 #book 标签的笔记的 Base，列为 frontmatter 中的作者、评分和状态"*
 
-:::info Requires Obsidian 1.8+
-Bases use Obsidian's built-in Bases feature. Make sure your Obsidian version supports it.
+:::info 需要 Obsidian 1.8+
+Bases 使用 Obsidian 内置的 Bases 功能。请确保您的 Obsidian 版本支持此功能。
 :::
 
-## Tips
+## 技巧
 
-1. Be specific about paths. "The Projects folder" is clearer than "my project notes."
-2. Use @-mentions to reference specific files. The agent does not have to search for them.
-3. Let the agent chain tools. A request like "find all notes about X, summarize them, and create a new note with the summary" uses multiple tools automatically.
-4. Check the activity block to see which files were read or changed.
-5. Start in Ask mode if you only want to explore. Switch to Agent mode when you are ready to make changes.
+1. 路径要具体。"Projects 文件夹"比"我的项目笔记"更清晰。
+2. 使用 @-mentions 引用特定文件。Agent 不必搜索它们。
+3. 让 Agent 链接工具。像"找出所有关于 X 的笔记，总结它们，并创建一条包含摘要的新笔记"这样的请求会自动使用多个工具。
+4. 查看活动块以了解哪些文件被读取或更改。
+5. 如果您只想探索，请在"提问"模式下开始。当您准备进行更改时切换到"Agent"模式。
 
-## Next steps
+## 下一步
 
-- [Knowledge Discovery](/guides/knowledge-discovery): Semantic search and the knowledge graph
-- [Chat Interface](/guides/chat-interface): Attachments, history, and shortcuts
-- [Office Documents](/guides/office-documents): Create PPTX, DOCX, and XLSX from your notes
+- [知识发现](/guides/knowledge-discovery)：语义搜索和知识图谱
+- [聊天界面](/guides/chat-interface)：附件、历史记录和快捷方式
+- [办公文档](/guides/office-documents)：从笔记创建 PPTX、DOCX 和 XLSX

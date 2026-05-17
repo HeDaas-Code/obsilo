@@ -1,106 +1,106 @@
 ---
-title: Memory & Personalization
-description: How Obsilo remembers your preferences, projects, and patterns across conversations.
+title: 记忆与个性化
+description: Obsilo 如何在对话中记住您的偏好、项目和模式。
 ---
 
-# Memory & Personalization
+# 记忆与个性化
 
-Obsilo remembers what you care about, how you like to work, and what you have discussed before.
+Obsilo 会记住您关心的事项，您的工作方式，以及您之前讨论过的内容。
 
-## How it remembers
+## 它如何记忆
 
-Obsilo uses a three-tier memory system:
+Obsilo 使用三级记忆系统：
 
-| Tier | What it stores | How it works |
-|------|---------------|-------------|
-| **Session memory** | Summary of each conversation: what was accomplished, decisions made, open questions | Created automatically when a conversation ends |
-| **Long-term memory** | Durable facts promoted from sessions: your preferences, active projects, workflow patterns | Extracted in the background by comparing session summaries against existing memory |
-| **Soul** | Core understanding of you: communication style, personality preferences, how you want the agent to behave | Updated when sessions reveal new preferences or corrections |
+| 层级 | 存储内容 | 工作原理 |
+|------|-----------|-------------|
+| **会话记忆** | 每个对话的摘要：完成的事项、做出的决定、待解决的问题 | 对话结束时自动创建 |
+| **长期记忆** | 从会话中提取的持久信息：您的偏好、活跃项目、工作流程模式 | 通过将会话摘要与现有记忆进行比较在后台提取 |
+| **灵魂** | 对您的核心理解：沟通风格、个性偏好、您希望智能体如何行为 | 当会话揭示新的偏好或修正时更新 |
 
-All memory files are stored in `.obsidian-agent/memory/` inside your vault's plugin directory. They are plain Markdown files you can read, edit, or delete at any time.
+所有记忆文件都存储在您的保险库插件目录中的 `.obsidian-agent/memory/` 内。它们是纯 Markdown 文件，您可以随时阅读、编辑或删除。
 
-:::tip You are in control
-Memory files are just text. Open them in any editor to see what Obsilo remembers. Delete a file to make it forget that category entirely.
+:::tip 您掌控一切
+记忆文件只是文本。在任何编辑器中打开它们，查看 Obsilo 记住的内容。删除某个文件即可使其完全忘记该类别。
 :::
 
-## Chat history
+## 聊天历史
 
-Every conversation is saved automatically (when chat history is enabled). You can browse, restore, and continue past conversations.
+每段对话都会自动保存（当聊天历史启用时）。您可以浏览、恢复和继续过去的对话。
 
-To access your chat history:
+访问聊天历史的方法：
 
-1. Click the clock icon in the chat toolbar
-2. A sliding panel shows all past conversations grouped by date (Today, Yesterday, This Week, Older)
-3. Click any conversation to restore it and continue where you left off
+1. 点击聊天工具栏中的时钟图标
+2. 滑出面板显示所有过去的对话，按日期分组（今天、昨天、本周、更早）
+3. 点击任何对话即可恢复并从上次停止的地方继续
 
-Conversations show the time they started and a short title. If you have a titling model configured (see Chat-Linking below), titles are generated automatically from the conversation content.
+对话显示其开始时间和简短标题。如果您配置了标题模型（见下文聊天链接），标题会根据对话内容自动生成。
 
-## Chat-Linking
+## 聊天链接
 
-When Obsilo creates or edits a note, it can add a link back to the conversation in the note's frontmatter. This lets you trace any change back to the conversation that caused it.
+当 Obsilo 创建或编辑笔记时，它可以在笔记的 frontmatter 中添加返回对话的链接。这让您可以追溯任何更改到引起该更改的对话。
 
-How it works:
+工作原理：
 
-- An `obsilo-chat` field is added to the note's YAML frontmatter
-- The value is a clickable link in the format `obsidian://obsilo-chat?id=...`
-- Clicking the link opens Obsilo and jumps straight to that conversation
+- `obsilo-chat` 字段会添加到笔记的 YAML frontmatter 中
+- 值是一个可点击的链接，格式为 `obsidian://obsilo-chat?id=...`
+- 点击链接会打开 Obsilo 并直接跳转到该对话
 
-Semantic titling: If you configure a small, fast model (like Haiku or GPT-4o mini) as the titling model, Obsilo generates meaningful conversation titles automatically. Without a titling model, the first 60 characters of the conversation are used instead.
+语义标题：如果您配置了一个小型快速模型（如 Haiku 或 GPT-4o mini）作为标题模型，Obsilo 会自动生成有意义的对话标题。没有标题模型的情况下，则使用对话的前 60 个字符。
 
-To configure Chat-Linking: Go to **Settings > Obsilo Agent > Interface** and look for the "Auto-link chats in frontmatter" toggle. You can also select your preferred titling model there.
+配置聊天链接：前往 **设置 > Obsilo Agent > 界面** 并找到"在 frontmatter 中自动链接对话"开关。您也可以在那里选择您偏好的标题模型。
 
-:::info Cost saving
-Use a cheap, fast model for titling (separate from your main model). It only needs to generate a short title, so even the smallest models work fine.
+:::info 节省成本
+使用廉价快速的模型进行标题生成（与您的主模型分开）。它只需要生成一个简短的标题，所以即使是最小的模型也能很好地工作。
 :::
 
-## Onboarding wizard
+## 入门向导
 
-When you first install Obsilo, a conversational setup wizard walks you through the basics:
+首次安装 Obsilo 时，一个对话式设置向导会带您了解基础知识：
 
-1. Introduction: Obsilo introduces itself and asks your name
-2. Naming: you can rename the agent if you prefer a different name
-3. Backup reminder: a prompt to back up your vault before letting the agent write
-4. Permissions: choose your comfort level for automatic approvals
-5. Profile: share what you use your vault for so Obsilo can tailor its help
+1. 介绍：Obsilo 自我介绍并询问您的名字
+2. 命名：如果您更喜欢其他名称，可以重命名智能体
+3. 备份提醒：在允许智能体写入之前提示您备份保险库
+4. 权限：选择您对自动批准的舒适级别
+5. 个人资料：分享您使用保险库的目的，以便 Obsilo 能够量身定制帮助
 
-The wizard runs as a normal chat conversation, not a form or popup. Your answers are saved to memory right away, so Obsilo starts personalized from the first real task.
+向导作为普通聊天对话运行，而非表单或弹窗。您的答案会立即保存到记忆中，因此 Obsilo 从第一个真实任务开始就是个性化的。
 
-## Memory settings
+## 记忆设置
 
-Open **Settings > Obsilo Agent > Memory** to configure:
+打开 **设置 > Obsilo Agent > 记忆** 进行配置：
 
-| Setting | What it does | Default |
+| 设置 | 功能 | 默认值 |
 |---------|-------------|---------|
-| **Enable memory** | Master toggle for the entire memory system | On |
-| **Auto-extract sessions** | Automatically create a session summary when a conversation ends | On |
-| **Auto-update long-term** | Promote durable facts from sessions to long-term memory | On |
-| **Memory model** | Which AI model runs the extraction (pick a cheap one) | Your first model |
-| **Minimum messages** | Conversations shorter than this threshold are skipped (range: 2-20) | 4 |
-| **Chat history** | Save conversations so you can browse and restore them | On |
+| **启用记忆** | 整个记忆系统的主开关 | 开 |
+| **自动提取会话** | 对话结束时自动创建会话摘要 | 开 |
+| **自动更新长期记忆** | 将持久信息从会话提升到长期记忆 | 开 |
+| **记忆模型** | 运行提取的 AI 模型（选择便宜的） | 您的第一个模型 |
+| **最少消息数** | 短于此阈值的对话会被跳过（范围：2-20） | 4 |
+| **聊天历史** | 保存对话以便您可以浏览和恢复 | 开 |
 
-:::warning Pick a cheap memory model
-Memory extraction runs after every qualifying conversation. Use a small model (Haiku, Flash, or GPT-4o mini) to keep costs low. The extraction task is simple and does not need a large model.
+:::warning 选择便宜的记忆模型
+每次符合条件的对话结束后都会运行记忆提取。使用小模型（Haiku、Flash 或 GPT-4o mini）以保持低成本。提取任务很简单，不需要大模型。
 :::
 
-## User profile
+## 用户资料
 
-As you work with Obsilo, it builds a profile of your preferences in `user-profile.md`:
+随着您与 Obsilo 的合作，它会在 `user-profile.md` 中建立您的偏好资料：
 
-- Your name and how you prefer to be addressed
-- Topics and projects you work on
-- Communication style preferences (brief vs. detailed, formal vs. casual)
-- Tools and workflows you use frequently
+- 您的名字及您希望被如何称呼
+- 您从事的主题和项目
+- 沟通风格偏好（简洁 vs. 详细，正式 vs. 随意）
+- 您频繁使用的工具和工作流程
 
-The agent reads this profile at the start of each conversation to personalize its responses. You can edit the file directly to correct or add information.
+智能体在每次对话开始时读取此资料，以个性化其响应。您可以直接编辑文件来更正或添加信息。
 
-## Tips
+## 提示
 
-1. Have real conversations. The more you interact, the better Obsilo understands your preferences. Short one-off questions do not generate much memory.
+1. 进行真实的对话。您互动得越多，Obsilo 就越了解您的偏好。简短的一次性问题不会产生太多记忆。
 
-2. Correct the agent. If Obsilo gets a preference wrong, tell it. Corrections are prioritized in memory extraction.
+2. 纠正智能体。如果 Obsilo 弄错了某个偏好，请告诉它。纠正在记忆提取中会被优先处理。
 
-3. Review your memory files occasionally. Open `.obsidian-agent/memory/` and scan the files. Remove anything outdated or incorrect.
+3. 偶尔检查您的记忆文件。打开 `.obsidian-agent/memory/` 并扫描文件。删除任何过时或不正确的内容。
 
-4. Use the minimum messages threshold wisely. If you often have short chats that are not worth remembering, raise the threshold. If every conversation matters, lower it.
+4. 明智地使用最少消息数阈值。如果您经常有不需要记住的短聊天，请提高阈值。如果每个对话都很重要，请降低它。
 
-5. Keep Chat-Linking enabled. The frontmatter links create an audit trail. You can always find *why* a note was changed and *what was discussed*.
+5. 保持聊天链接启用。Frontmatter 链接创建了审计跟踪。您始终可以找到笔记被更改的*原因*以及*讨论了什么*。

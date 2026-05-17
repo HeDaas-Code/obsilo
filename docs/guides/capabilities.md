@@ -1,104 +1,60 @@
 ---
-title: What Obsilo Can Do
-description: A quick look at what makes Obsilo different and how it can help you work with your vault.
+title: Obsilo 能做什么
+description: 快速了解 Obsilo 的核心能力，以及它与其他 AI 工具的不同之处。
 ---
 
-# What Obsilo can do
+# Obsilo 能做什么
 
-Most AI tools sit outside your knowledge base and wait for you to copy-paste. Obsilo lives inside it. It reads your notes, understands how they connect, learns your habits, and acts on your behalf. Here is what that means in practice.
+大多数 AI 工具游离在你的知识库之外，等着你复制粘贴内容。Obsilo 生活在里面。它阅读你的笔记，理解它们之间的关联，学习你的习惯，然后代表你行动。下面是这意味着什么的实际体现。
 
-## An AI that understands your vault
+## 理解你的知识库的 AI
 
-Obsilo does not just access your files. It understands the structure: wikilinks, frontmatter properties, tags, folder hierarchies, and the graph that ties them together.
+大多数 AI 助手不知道你关心什么、你在做什么项目、你用什么结构组织笔记。Obsilo 不同——它就在你的 Obsidian 里，可以看到你的整个知识库。
 
-When you ask "what do I know about X?", it does not grep through filenames. It searches by meaning, walks the knowledge graph, and finds connections you may have missed.
+这让它能够：
 
-> **Example prompt:** "Find all notes related to behavioral economics and show me how they connect."
+- 找到与你的问题最相关的笔记，而不是泛泛的搜索结果
+- 根据你的知识结构而不是通用知识来回答问题
+- 理解你的笔记之间的关联——wikilinks、反向链接、共享标签
+- 学习你的偏好、工作流程和写作风格，并在对话中应用
 
-[Set up semantic search](/guides/knowledge-discovery) | [How the knowledge layer works](/concepts/knowledge-layer)
+## 完全控制你的数据
 
-## It discovers what you missed
+Obsilo 可以在完全本地运行，使用 Ollama 或 LM Studio 等工具。这意味着你的笔记永远不需要离开你的机器。没有云 API，没有数据上传，完全私密。
 
-Your vault grows organically. Notes pile up in different folders. Over time, related ideas drift apart without anyone linking them.
+如果你选择使用云模型（Anthropic、OpenAI、Gemini 等），Obsilo 也支持——但这始终是你的选择，不是默认要求。
 
-Obsilo runs implicit connection analysis in the background. It finds note pairs that are semantically similar but have no wikilink between them. It also checks for orphaned notes, broken links, inconsistent tags, and missing backlinks.
+## 你说话，它行动
 
-> **Example prompt:** "Run a health check on my vault and tell me what needs fixing."
+Obsilo 不只是回答问题——它真的去做事：
 
-[Vault health check](/guides/vault-health) | [Knowledge discovery](/guides/knowledge-discovery)
+- **读取、创建、编辑文件** — 让它帮你写文档、修改笔记、整理文件夹
+- **语义搜索** — 用自然语言在你的知识库中查找内容，而不是关键词
+- **创建 Office 文件** — 直接在知识库中生成 PPTX、DOCX、XLSX
+- **多步工作流** — 复杂任务自动拆解，自动执行，自动汇报
 
-## It learns how you work
+## 安全地授予写权限
 
-When the agent completes a task successfully, it remembers the tool sequence. After a few repetitions, it builds a "recipe" and runs similar tasks 10x faster, using 90% fewer tokens.
+这是让 AI 真正有用的关键：写权限。但给 AI 写权限是可怕的，除非有安全机制。
 
-It also remembers your preferences, your writing style, and your projects. Not just within one chat, but across sessions. It builds a profile over time and adapts to how you like things done.
+Obsilo 默认是 fail-closed 的。任何写操作——创建文件、编辑内容、删除文件——都需要你的明确批准。你始终知道发生了什么，并有机会阻止。
 
-> **Example prompt:** "Summarize this meeting note like last time." (It remembers your preferred format.)
+你可以根据信任程度逐步开启自动审批，熟悉系统的行为模式后再放开。
 
-[Memory and personalization](/guides/memory-personalization) | [How memory works](/concepts/memory-system)
+## 从一个笔记到整个知识网络
 
-## You stay in control
+Obsilo 的知识层让它不只是简单地搜索笔记。它有一个四阶段的检索管道：
 
-Every file change needs your approval. Every edit creates a git snapshot you can undo with one click. The operation log records everything the agent did.
+1. **向量搜索** — 找到语义相关的内容
+2. **图扩展** — 通过 wikilinks 找到相关内容
+3. **隐含连接** — 发现没有明显链接但实际上相关的内容
+4. **重排序** — 综合所有信号对结果进行最终排序
 
-You choose the AI model. You decide what gets sent to the cloud. You can run everything locally with Ollama or LM Studio if you want zero cloud dependency.
+这意味着 Obsilo 给你的是「与你的问题最相关的笔记，考虑到它们在你的知识网络中的位置」——不是孤立的搜索结果，而是一个相互关联的知识体系。
 
-> **No surprises:** Obsilo cannot change a file without showing you the diff first.
+## 深入了解
 
-[Safety and control](/guides/safety-control) | [How governance works](/concepts/governance)
-
-## It works with your plugins
-
-Obsilo scans your installed plugins at startup and generates skill files for each one. It can run Obsidian commands, call plugin APIs, and build workflows that combine multiple plugins.
-
-Dataview queries, Kanban boards, Templater templates, Tasks plugin, Excalidraw drawings: if you have the plugin installed, the agent can use it.
-
-> **Example prompt:** "Create a Kanban board from the open tasks in my project notes."
-
-[Skills, rules, and workflows](/guides/skills-rules-workflows) | [How plugin discovery works](/concepts/vault-dna)
-
-## It creates documents from your knowledge
-
-Need a presentation for Monday? Obsilo turns your meeting notes into a PowerPoint. It creates Word documents from project notes and Excel sheets from structured data.
-
-You can use your own PPTX templates. The agent analyzes the slide layouts and fills them with content from your vault. No manual copy-paste needed.
-
-> **Example prompt:** "Create a presentation about Q2 results using the corporate template."
-
-[Office documents guide](/guides/office-documents) | [How the office pipeline works](/concepts/office-pipeline)
-
-## It connects to everything
-
-Obsilo includes an MCP server. That means Claude Desktop, Claude Code, and any MCP-compatible tool can search your vault, read your notes, and create content through your vault's intelligence layer.
-
-You can also connect Obsilo to external MCP servers for additional capabilities.
-
-> **Example prompt:** In Claude Desktop: "Search my Obsidian vault for notes about the product launch."
-
-[Connectors guide](/guides/connectors) | [MCP architecture](/concepts/mcp-architecture)
-
-## It delegates complex work
-
-For tasks that span multiple topics, Obsilo can spawn sub-agents. One researches meeting notes while another searches the web, and a third synthesizes both into a document.
-
-Sub-agents run in isolation, each with their own conversation context. The main agent collects and combines their results.
-
-> **Example prompt:** "Compare what my vault says about pricing strategy with the latest market research online, then write a recommendation note."
-
-[Multi-agent guide](/guides/multi-agent)
-
-## What it costs
-
-Obsilo itself is free and open source. You pay only for the AI model you use.
-
-| Option | Monthly cost |
-|--------|-------------|
-| Google Gemini (free tier) | Free |
-| Ollama / LM Studio (local) | Free (your hardware) |
-| OpenRouter (cloud) | Pay per token, typically $0.50-5 per day |
-| Anthropic / OpenAI (direct) | Pay per token, typically $1-10 per day |
-| GitHub Copilot (subscription) | Included with Copilot subscription |
-
-Obsilo's token optimization (Fast Path, KV-cache alignment, context externalization) reduces costs by up to 90% compared to a naive agent loop.
-
-[Choosing a model](/guides/choosing-a-model) | [Token optimization](/concepts/token-optimization)
+- [聊天界面](../guides/chat-interface) — 如何使用 Obsilo 的对话界面
+- [安全与控制](../guides/safety-control) — 审批系统和权限管理
+- [模式系统](../concepts/mode-system) — Ask 模式和 Agent 模式的区别
+- [工具系统](../concepts/tool-system) — Obsilo 内置的所有工具

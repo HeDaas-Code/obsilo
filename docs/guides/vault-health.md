@@ -1,63 +1,63 @@
 ---
-title: Vault Health Check
-description: Find and fix structural problems in your vault like orphaned notes, broken links, and inconsistent tags.
+title: 知识库健康检查
+description: 发现并修复知识库中的结构性问题，如孤立笔记、失效链接和标签不一致。
 ---
 
-# Vault health check
+# 知识库健康检查
 
-Large vaults accumulate structural problems over time. Notes get orphaned, links break, tags diverge in spelling, and MOC pages lose backlinks. The vault health check finds these issues so you can fix them.
+大型知识库在长期使用中会积累结构性问题。笔记可能变成孤立的，链接可能失效，标签可能出现拼写差异，MOC 页面可能丢失反向链接。知识库健康检查能发现这些问题，方便你进行修复。
 
-## Running a health check
+## 运行健康检查
 
-Ask the agent directly:
+直接向 Agent 提问：
 
-> "Check my vault for structural issues."
+> "检查我的知识库是否存在结构性问题。"
 
-Or be specific about what you want to check:
+或者明确指定要检查的内容：
 
-> "Find all orphaned notes that have no incoming links."
+> "找出所有没有传入链接的孤立笔记。"
 
-The agent calls `vault_health_check`, which runs SQL queries against your knowledge database. No LLM tokens are used for the scan itself.
+Agent 会调用 `vault_health_check`，对你的知识数据库执行 SQL 查询。扫描本身不消耗 LLM token。
 
-## What it checks
+## 检查项目
 
-| Check | What it finds |
-|-------|--------------|
-| **Orphaned notes** | Notes with zero incoming wikilinks. Nobody links to them. |
-| **Missing backlinks** | MOC or hub notes that link outward but are not linked back. |
-| **Broken links** | Wikilinks pointing to notes that do not exist in your vault. |
-| **Weak clusters** | Semantically similar note pairs with no link between them. |
-| **Inconsistent tags** | Spelling variants of the same tag, like `#meeting` and `#meetings`. |
-| **Category mismatches** | Notes whose folder or properties conflict with ontology categories. |
+| 检查项 | 说明 |
+|-------|------|
+| **孤立笔记** | 没有任何传入 wikilink 的笔记，没有任何笔记链接到它们。 |
+| **缺失的反向链接** | MOC 或枢纽笔记向外链接了其他笔记，但其他笔记没有链接回来。 |
+| **失效链接** | 指向知识库中不存在的笔记的 wikilink。 |
+| **弱关联** | 语义相似但相互之间没有链接的笔记对。 |
+| **标签不一致** | 同一标签的拼写变体，如 `#meeting` 和 `#meetings`。 |
+| **分类不匹配** | 笔记所在文件夹或属性与本体分类产生冲突。 |
 
-## Fixing issues
+## 修复问题
 
-When the agent reports findings, you have two options:
+当 Agent 报告发现的问题时，你有两个选择：
 
-**Option 1: Let the agent fix them.** Ask:
+**选项一：让 Agent 修复。** 可以这样提问：
 
-> "Fix the missing backlinks you found."
+> "修复你发现的缺失反向链接。"
 
-The agent adds wikilinks, renames tags, or moves notes as needed. Each change requires your approval and creates a checkpoint.
+Agent 会添加 wikilink、重命名标签或移动笔记。每个更改都需要你确认并创建检查点。
 
-**Option 2: Use the repair modal.** The Vault Health Repair Modal shows all findings grouped by category. You select which ones to fix. Every fix is backed by a checkpoint, so you can undo individual changes.
+**选项二：使用修复面板。** 知识库健康修复面板会按类别显示所有发现的问题，你可以选择要修复哪些。每个修复操作都会创建检查点，因此可以撤消单个更改。
 
-## Requirements
+## 前提条件
 
-The vault health check needs a built semantic index. If you haven't set one up yet, see [Your First Knowledge Workflow](/tutorials/knowledge-workflow).
+知识库健康检查需要已构建的语义索引。如果你还没有设置，请参阅[你的第一个知识工作流](/tutorials/knowledge-workflow)。
 
-Without an index, the check still finds broken links and orphaned notes, but cannot detect weak clusters or implicit connections.
+如果没有索引，检查仍然可以发现失效链接和孤立笔记，但无法检测弱关联或隐式连接。
 
-## When to run it
+## 运行时机
 
-There is no fixed schedule. Good times to run a check:
+没有固定的时间表。以下是运行检查的好时机：
 
-- After adding a batch of new notes (importing, migrating)
-- After reorganizing your folder structure
-- Once a month as general maintenance
-- When search results feel incomplete
+- 添加了大量新笔记之后（导入、迁移）
+- 重新组织了文件夹结构之后
+- 每月进行一次常规维护
+- 感觉搜索结果不完整时
 
-## Next steps
+## 下一步
 
-- [Knowledge discovery](/guides/knowledge-discovery): Semantic search and the knowledge graph
-- [Safety and control](/guides/safety-control): How checkpoints protect your changes
+- [知识发现](/guides/knowledge-discovery)：语义搜索和知识图谱
+- [安全与控制](/guides/safety-control)：检查点如何保护你的更改

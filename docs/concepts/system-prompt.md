@@ -3,93 +3,93 @@ title: System Prompt
 description: How the agent's system prompt is assembled from modular sections, skills, memory, and mode context.
 ---
 
-# System prompt
+# System Prompt
 
-The system prompt is the first thing the model sees. It tells the agent who it is, what tools it has, what rules to follow, and what the user's vault looks like. The prompt is not a static string. It is assembled from 16 independent section modules, filtered by the active mode, and enriched with runtime context like skills and memory.
+System prompt 是模型看到的第一个内容。它告诉 agent 是谁、有什么工具、要遵循什么规则，以及用户的保险库（vault）是什么样的。这个 prompt 不是静态字符串，而是由 16 个独立的模块化 section 组合而成，并按当前模式进行过滤，还包含运行时上下文（如 skills 和 memory）。
 
-The orchestrator is `buildSystemPromptForMode()` in `src/core/systemPrompt.ts`. The sections live in `src/core/prompts/sections/`.
+编排器是 `src/core/systemPrompt.ts` 中的 `buildSystemPromptForMode()` 函数。各 section 位于 `src/core/prompts/sections/` 目录。
 
-## Why modular?
+## 为什么要模块化？
 
-A monolithic prompt becomes unworkable past a few hundred lines. Obsilo's prompt routinely exceeds 5,000 tokens because the agent needs to understand 49 tools, safety rules, vault conventions, and user-specific context. Modules solve two real problems:
+当 prompt 达到几百行时，单体式（monolithic）prompt 会变得难以管理。Obsilo 的 prompt 经常超过 5,000 个 token，因为 agent 需要理解 49 个工具、安全规则、保险库约定和用户特定上下文。模块化解决两个实际问题：
 
-- Different modes need different prompts. A read-only mode should not include write-tool descriptions. Subtasks should skip skills and memory to stay lean. With modules, you toggle sections on or off.
-- Adding a skill or a new tool group should not require editing a monolithic template. Each concern lives in its own file.
+- 不同模式需要不同的 prompt。只读模式不应该包含写工具的描述。子任务应该跳过 skills 和 memory 以保持轻量。使用模块，你可以开关各 section。
+- 添加一个 skill 或新的工具组不应该需要编辑单体模板。每个关注点都存在于自己的文件中。
 
-## Assembly order
+## 组合顺序
 
-Position matters. LLMs pay more attention to content near the top (primacy effect) and the bottom (recency effect). But a second constraint turned out to be more important than primacy: KV-cache efficiency.
+位置很重要。LLM 对顶部（首因效应）和底部（近因效应）的内容关注度更高。但事实证明，第二个约束比首因效应更重要：KV-cache 效率。
 
-Modern LLM APIs cache the key-value state of the prompt prefix. As long as the beginning of the prompt stays identical across calls, the cached tokens don't need to be recomputed. Anthropic's API offers this explicitly with a cache control parameter. OpenAI and DeepSeek do automatic prefix caching. A single changed token at the start invalidates the entire cache for everything after it.
+现代 LLM API 会缓存 prompt 前缀的 key-value 状态。只要 prompt 开头在各调用之间保持相同，缓存的 token 就不需要重新计算。Anthropic 的 API 通过 cache control 参数显式提供此功能。OpenAI 和 DeepSeek 做自动前缀缓存。开头的一个 token 变化就会使之后所有内容的整个缓存失效。
 
-The original prompt had the current timestamp at position 1. Every API call has a different timestamp, so there were zero cache hits across iterations. Moving the timestamp to the end and sorting all sections by stability made the first ~20,000 tokens cacheable across an entire task session. Over eight iterations, actual computation drops from 8 x 25,000 = 200,000 tokens to roughly 25,000 + 7 x 5,000 = 60,000 tokens.
+原始 prompt 在第 1 位放置了当前时间戳。每个 API 调用的时间戳都不同，所以跨迭代的缓存命中数为零。把时间戳移到末尾，并将所有 section 按稳定性排序，使整个任务会话中前约 20,000 个 token 可以缓存。在八次迭代中，实际计算从 8 x 25,000 = 200,000 个 token 减少到大约 25,000 + 7 x 5,000 = 60,000 个 token。
 
-The sections are now ordered by stability, with the stable prefix first and dynamic content last:
+各 section 现在按稳定性排序，稳定的 prefix 在前，动态内容在后：
 
-**Stable prefix (cached across iterations within a session):**
+**稳定的 prefix（在一个会话内的各迭代之间缓存）：**
 
-| # | Section | What it does |
+| # | Section | 功能 |
 |---|---------|-------------|
-| 1 | Mode Definition | Sets the role, shaping everything that follows |
-| 2 | Capabilities | Compact summary of what the agent can do |
-| 3 | Obsidian Conventions | Vault-specific rules: frontmatter, wikilinks, etc. |
-| 4 | Tools | Tool list, filtered by the mode's `toolGroups` (~8,000 tokens) |
-| 5 | Tool Routing | Tool selection rules and decision guidelines |
-| 6 | Objective | Task decomposition strategy |
-| 7 | Response Format | Output structure rules (skipped in subtasks) |
-| 8 | Security Boundary | Prompt injection defense, permission boundaries |
+| 1 | Mode Definition | 设置角色，塑造后续所有内容 |
+| 2 | Capabilities | agent 能做什么的简要总结 |
+| 3 | Obsidian Conventions | 保险库特定规则：frontmatter、wikilinks 等 |
+| 4 | Tools | 工具列表，按模式的 `toolGroups` 过滤（约 8,000 token）|
+| 5 | Tool Routing | 工具选择规则和决策指南 |
+| 6 | Objective | 任务分解策略 |
+| 7 | Response Format | 输出结构规则（在子任务中跳过）|
+| 8 | Security Boundary | Prompt 注入防御、权限边界 |
 
-**Dynamic suffix (can change per message or session, not cached):**
+**动态后缀（每个消息或会话都可能变化，不缓存）：**
 
-| # | Section | What it does |
+| # | Section | 功能 |
 |---|---------|-------------|
-| 9 | Plugin Skills | Skills from installed Obsidian plugins |
-| 10 | Active Skills | High-priority workflow instructions (skipped in subtasks) |
-| 11 | Memory | User memory context (skipped in subtasks) |
-| 12 | Procedural Recipes | Learned and static recipes for known task patterns |
-| 13 | Self-Authored Skills | Skills the agent created via `manage_skill` |
-| 14 | Custom Instructions + Rules | User's global + per-mode instructions, rules from `.obsilo/rules/` |
-| 15 | Vault Context | Current vault state and structure |
-| 16 | Date/Time | Current timestamp (must be last, changes every call) |
+| 9 | Plugin Skills | 已安装 Obsidian 插件中的 skills |
+| 10 | Active Skills | 高优先级工作流指令（在子任务中跳过）|
+| 11 | Memory | 用户 memory 上下文（在子任务中跳过）|
+| 12 | Procedural Recipes | 针对已知任务模式的学习和静态 recipes |
+| 13 | Self-Authored Skills | agent 通过 `manage_skill` 创建的 skills |
+| 14 | Custom Instructions + Rules | 用户的全局 + per-mode 指令，`.obsilo/rules/` 中的规则 |
+| 15 | Vault Context | 当前保险库状态和结构 |
+| 16 | Date/Time | 当前时间戳（必须在最后，每次调用都会变化）|
 
-Empty sections are filtered out before joining. If there is no memory context, the memory section is absent. No hollow headers, no wasted tokens.
+空的 section 在连接前会被过滤掉。如果没有 memory 上下文，memory section 就不会出现。没有空洞的标题，没有浪费的 token。
 
-Moving skills from position 3 to position 10 loses some primacy effect. To compensate, the system appends the current task list as the final user message before every LLM call, exploiting the model's recency bias. This technique is borrowed from Manus' context engineering approach.
+将 skills 从第 3 位移到第 10 位会损失一些首因效应。作为补偿，系统在每次 LLM 调用前将当前任务列表作为最后的用户消息附加，利用模型的近因偏差。这种技术借鉴自 Manus 的上下文工程方法。
 
-## How skills get injected
+## Skills 如何注入
 
-Skills are markdown files that contain workflow instructions. They activate when a user message matches their trigger keywords. The flow:
+Skills 是包含工作流指令的 markdown 文件。当用户消息匹配其触发关键词时激活。流程如下：
 
-1. `SkillLoader` reads skills from `.obsilo/skills/` and the bundled skill directory.
-2. The user's message is compared against each skill's trigger patterns.
-3. Matching skills are concatenated into the active skills section at position 10.
+1. `SkillLoader` 从 `.obsilo/skills/` 和捆绑的 skill 目录读取 skills。
+2. 用户消息与每个 skill 的触发模式进行匹配。
+3. 匹配的 skills 被连接成位于第 10 位的 active skills section。
 
-Skills sit in the dynamic block because different messages activate different skills. Placing them in the stable prefix would invalidate the KV cache whenever the active skill set changes. To compensate for the reduced primacy, skills are marked with a `SKILL PRECEDENCE (MANDATORY)` header that the model treats as a strong instruction signal. The recency anchor (task list as last user message) provides additional reinforcement.
+Skills 位于动态块中，因为不同消息会激活不同的 skills。将它们放在稳定 prefix 中会在 active skill 集合变化时使 KV cache 失效。为了弥补降低的首因效应，skills 带有 `SKILL PRECEDENCE (MANDATORY)` 标题，模型将其视为强指令信号。近因锚点（任务列表作为最后的用户消息）提供额外强化。
 
-Self-authored skills (ones the agent created via `manage_skill`) land at position 13, after active skills and memory. They supplement the primary skills, not replace them.
+Self-authored skills（agent 通过 `manage_skill` 创建的）位于第 13 位，在 active skills 和 memory 之后。它们补充主要 skills，而不是替换它们。
 
-## How memory gets injected
+## Memory 如何注入
 
-The memory section pulls relevant entries from the user's memory database and injects them as context. Subtasks skip memory entirely to keep child prompts focused.
+Memory section 从用户的 memory 数据库中提取相关条目并作为上下文注入。子任务完全跳过 memory 以保持子 prompt 聚焦。
 
-## Token budget
+## Token 预算
 
-The system prompt cannot exceed the model's context window. When you add a long custom instruction or load several skills, the prompt grows. Core sections (tools, security boundary) are always present. Optional sections (memory, skills, custom instructions) can be trimmed or skipped based on available context.
+System prompt 不能超过模型的上下文窗口。当你添加长的自定义指令或加载多个 skills 时，prompt 会增长。核心 section（tools、security boundary）始终存在。可选 section（memory、skills、custom instructions）可以根据可用上下文进行修剪或跳过。
 
-Subtasks are the most aggressive about trimming. A child task skips skills, memory, response format, recipes, self-authored skills, and custom instructions. It gets the tools, the rules, and the job. Nothing more.
+子任务在修剪上最为激进。子任务跳过 skills、memory、response format、recipes、self-authored skills 和 custom instructions。它只获得工具、规则和任务。没有更多。
 
-## Per-mode customization
+## Per-mode 自定义
 
-Each mode provides a `roleDefinition` that goes into the mode definition section, and optional `customInstructions` appended to the custom instructions section. The `toolGroups` field controls which tools appear in the tools section.
+每个模式提供一个放入 mode definition section 的 `roleDefinition`，以及可选的附加到 custom instructions section 的 `customInstructions`。`toolGroups` 字段控制哪些工具出现在 tools section 中。
 
-Two modes can produce very different system prompts from the same set of section modules. Ask mode gets a read-only role definition and no write tools. Agent mode gets the full set.
+两个模式可以从同一组 section 模块产生非常不同的 system prompt。Ask 模式获得只读角色定义且没有写工具。Agent 模式获得完整集合。
 
-## Prompt caching
+## Prompt 缓存
 
-The system prompt has two levels of caching. At the application level, `AgentTask` caches the assembled prompt per mode and rebuilds it only when the active mode changes, a settings change affects tool availability, or an explicit invalidation is triggered.
+System prompt 有两级缓存。在应用层面，`AgentTask` 缓存每个模式的组合 prompt，只有在当前模式变化、影响工具可用性的设置变化或触发显式失效时才会重建。
 
-At the API level, the stable prefix (positions 1-8) benefits from provider-level KV-cache. Anthropic's API receives a `cache_control` marker on the system prompt. OpenAI and DeepSeek do automatic prefix caching. Because all dynamic content sits after the stable block, the first ~20,000 tokens are computed once per session and served from cache on subsequent iterations. This is the single biggest cost optimization in the system: it turns the system prompt from the second-largest cost block into a near-zero marginal cost per iteration.
+在 API 层面，稳定的 prefix（第 1-8 位）受益于提供商级别的 KV-cache。Anthropic 的 API 在 system prompt 上接收 `cache_control` 标记。OpenAI 和 DeepSeek 做自动前缀缓存。因为所有动态内容都在稳定块之后，第一个约 20,000 个 token 在每个会话中计算一次，后续迭代从缓存中提供。这是系统中最主要的成本优化：它将 system prompt 从第二大成本块转变为每次迭代接近零的边际成本。
 
-## Power steering
+## 动力转向
 
-During long-running tasks, `AgentTask` injects a synthetic user message every N iterations. It contains the active mode's role definition, active skill names, and a reminder to stay on task. This is not a system prompt change; it is a user-role message appended to the conversation history. The model treats it as a redirect.
+在长时间运行的任务中，`AgentTask` 每 N 次迭代注入一条合成用户消息。它包含当前模式的角色定义、active skill 名称，以及保持任务焦点的提醒。这不是 system prompt 的改变；而是作为用户角色消息附加到对话历史中。模型将其视为重定向。

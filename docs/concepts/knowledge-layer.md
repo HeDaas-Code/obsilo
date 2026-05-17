@@ -1,94 +1,94 @@
 ---
-title: Knowledge Layer
-description: How Obsilo finds relevant information in your vault through a 4-stage retrieval pipeline.
+title: 知识层
+description: Obsilo 如何通过四阶段检索管道在保险库中找到相关信息。
 ---
 
-# Knowledge layer
+# 知识层
 
-A vault can hold thousands of notes. The agent's context window fits maybe a dozen. The knowledge layer bridges that gap: given a query, it finds the most relevant notes without calling any external API.
+一个保险库可以容纳数千条笔记。智能体的上下文窗口最多只能容纳十几条。知识层架起了这座桥梁：给定一个查询，它能在不调用任何外部 API 的情况下找到最相关的笔记。
 
-Everything runs locally. The vector math, the graph traversal, the reranking model. Your data never leaves the device.
+一切都在本地运行。向量数学、图遍历、重排序模型。你的数据永远不会离开设备。
 
-## The problem
+## 问题
 
-Keyword search misses semantic matches. A note titled "Project retrospective" won't match a query about "what went wrong last quarter" even though it's exactly what you need. And even with good candidates, you still miss notes that are *related to* those candidates through links and tags.
+关键词搜索会遗漏语义匹配。一条名为"项目回顾"的笔记不会匹配关于"上季度出了什么问题"的查询，尽管它正是你需要的。而且，即使有了好的候选结果，你仍然会遗漏那些通过链接和标签与这些候选结果*相关*的笔记。
 
-Full-text search has a breadth problem too. It tells you which notes contain a word, but not which notes are conceptually relevant. A note about "quarterly review process" might be what you're looking for when asking about retrospectives, but it shares zero keywords with the query. The knowledge layer handles both: semantic similarity for meaning, graph traversal for context.
+全文搜索也有广度问题。它能告诉你哪些笔记包含某个词，但不能告诉你哪些笔记在概念上是相关的。一条关于"季度评审流程"的笔记可能正是你在询问回顾时所需的，但它与查询零关键词共享。知识层同时处理这两方面：语义的相似性用于理解含义，图遍历用于获取上下文。
 
-## The 4-stage pipeline
+## 四阶段管道
 
-Each stage adds candidates that the previous stages would miss.
+每个阶段都会添加前几个阶段会遗漏的候选结果。
 
 ```mermaid
 flowchart LR
-    Q[Query] --> V[Vector search]
-    V --> G[Graph expansion]
-    G --> I[Implicit connections]
-    I --> R[Reranking]
-    R --> Out[Top K results]
+    Q[查询] --> V[向量搜索]
+    V --> G[图扩展]
+    G --> I[隐式连接]
+    I --> R[重排序]
+    R --> Out[Top K 结果]
 ```
 
-Stage 1: vector search. The query is embedded into a vector using your configured embedding model, then compared against pre-computed chunk vectors via cosine similarity. This finds semantically similar content regardless of wording. A query about "team morale" matches notes about "employee satisfaction" because the vectors are close in embedding space.
+**第一阶段：向量搜索**。使用你配置的嵌入模型将查询嵌入为向量，然后通过余弦相似度与预计算的分块向量进行比较。这可以找到语义相似的内容，无论措辞如何。关于"团队士气"的查询会匹配关于"员工满意度"的笔记，因为它们的向量在嵌入空间中很接近。
 
-Notes are split into chunks before embedding. Each chunk gets its own row in the `vectors` table. The chunking happens during indexing, not at query time, so search is fast even on large vaults.
+笔记在嵌入前会被分割成多个分块。每个分块在 `vectors` 表中都有自己的一行。分块发生在索引期间，而不是在查询时，因此即使在大型保险库上搜索也很快。
 
-Stage 2: graph expansion. The initial vector results are seed nodes. The system follows Wikilinks and frontmatter properties outward via breadth-first search. If your "Q3 retrospective" note links to "Action items" and "Team feedback", those get pulled in too. The `GraphStore` (`src/core/knowledge/GraphStore.ts`) handles the BFS traversal over the `edges` table, tracking hop distance so closer neighbors rank higher.
+**第二阶段：图扩展**。初始向量结果作为种子节点。系统通过广度优先搜索跟踪 Wikilinks 和 frontmatter 属性向外扩展。如果你的"Q3 回顾"笔记链接到"行动项目"和"团队反馈"，这些也会被纳入。`GraphStore`（`src/core/knowledge/GraphStore.ts`）通过 `edges` 表处理 BFS 遍历，追踪跳跃距离以便较近的邻居排名更高。
 
-The graph distinguishes body links (Wikilinks in note content) from frontmatter links (properties like `related`, `parent`, or custom MOC fields). Both contribute to expansion, but they're stored with different `link_type` values so the system can weight them differently.
+图区分正文链接（笔记内容中的 Wikilinks）和 frontmatter 链接（`related`、`parent` 或自定义 MOC 字段等属性）。两者都对扩展有贡献，但它们以不同的 `link_type` 值存储，以便系统可以对它们进行不同的加权。
 
-Stage 3: implicit connections. Some notes are similar but have no explicit link between them. The `ImplicitConnectionService` (`src/core/knowledge/ImplicitConnectionService.ts`) pre-computes these pairs in a background job by comparing vectors across the vault and storing high-similarity pairs. During retrieval, if any candidate has an implicit connection to another note, that note joins the pool.
+**第三阶段：隐式连接**。有些笔记相似但之间没有显式链接。`ImplicitConnectionService`（`src/core/knowledge/ImplicitConnectionService.ts`）通过比较整个保险库中的向量并在后台作业中预计算高相似度 pairs。在检索期间，如果任何候选结果与另一条笔记有隐式连接，该笔记也会加入候选池。
 
-This stage separates the knowledge layer from a standard search engine. It surfaces relationships that exist semantically but not structurally. You might have two meeting notes from different projects that discuss the same technical problem. No link between them, no shared tags, but the implicit connection picks them up. The `dismissed_pairs` table lets you prune false positives: if the system keeps surfacing a pair that isn't actually related, you can dismiss it.
+这个阶段将知识层与标准搜索引擎区分开来。它呈现的是语义上存在但结构上不存在的关理。你可能有两份来自不同项目的会议笔记，讨论同一个技术问题。它们之间没有链接，没有共享标签，但隐式连接会将它们关联起来。`dismissed_pairs` 表允许你修剪假阳性：如果系统持续呈现一个实际上并不相关的 pair，你可以将其忽略。
 
-Stage 4: reranking. All candidates from the first three stages are re-scored by a local cross-encoder model (Xenova/ms-marco-MiniLM-L-6-v2 via transformers.js WASM). Unlike the embedding model which encodes query and document separately, the cross-encoder processes the pair together and produces a more accurate relevance score. The `RerankerService` (`src/core/knowledge/RerankerService.ts`) downloads the model from HuggingFace on first use and caches it locally.
+**第四阶段：重排序**。前三个阶段的所有候选结果通过本地交叉编码器模型（Xenova/ms-marco-MiniLM-L-6-v2，通过 transformers.js WASM）重新评分。与分别编码查询和文档的嵌入模型不同，交叉编码器将 pair 一起处理，产生更准确的相关性评分。`RerankerService`（`src/core/knowledge/RerankerService.ts`）在首次使用时从 HuggingFace 下载模型并缓存在本地。
 
-The cross-encoder is small (about 80 MB) and runs entirely on CPU via WASM. First-time download takes a few seconds; after that it loads from the local cache in under a second.
+交叉编码器很小（约 80 MB），完全通过 WASM 在 CPU 上运行。首次下载需要几秒钟；之后从本地缓存加载不到一秒钟。
 
-## Indexing
+## 索引
 
-The knowledge layer is only as good as its index. Vault events (file create, modify, delete, rename) trigger re-indexing through a debounced listener in `main.ts`. The debounce groups rapid changes into a single indexing pass. When a file changes, only its chunks are re-embedded; the rest of the index stays untouched.
+知识层的好坏取决于其索引。保险库事件（文件创建、修改、删除、重命名）通过 `main.ts` 中的防抖监听器触发重新索引。防抖将快速变化分组为单个索引传递。当文件更改时，只重新嵌入其分块；索引的其余部分保持不变。
 
-The graph (edges and tags) is re-extracted on each index run. This is fast because it reads Obsidian's metadata cache rather than parsing Markdown directly. Implicit connections are recomputed less frequently as a background job after the main indexing pass, because comparing every vector pair is more expensive.
+图（边和标签）在每次索引运行时重新提取。这很快，因为它读取 Obsidian 的元数据缓存而不是直接解析 Markdown。隐式连接在主索引传递后作为后台作业重新计算，因为比较每个向量 pair 成本更高。
 
-## Storage
+## 存储
 
-Everything lives in a single SQLite database managed by `KnowledgeDB` (`src/core/knowledge/KnowledgeDB.ts`), running via sql.js (WASM SQLite compiled to JavaScript). No native addons, no Electron rebuild needed.
+所有数据都驻留在由 `KnowledgeDB`（`src/core/knowledge/KnowledgeDB.ts`）管理的单个 SQLite 数据库中，通过 sql.js（WASM SQLite 编译为 JavaScript）运行。无需原生插件，无需 Electron 重建。
 
-| Table | Purpose | Key columns |
-|-------|---------|-------------|
-| `vectors` | Chunk embeddings | `path`, `chunk_index`, `text`, `vector` (Float32Array BLOB), `enriched` |
-| `edges` | Wikilinks and frontmatter properties | `source_path`, `target_path`, `link_type` |
-| `tags` | Note tags | `path`, `tag` |
-| `implicit_edges` | Pre-computed similar pairs | `source_path`, `target_path`, `similarity` |
-| `dismissed_pairs` | User-dismissed implicit connections | `path_a`, `path_b` |
+| 表 | 用途 | 关键列 |
+| --- | --- | --- |
+| `vectors` | 分块嵌入 | `path`、`chunk_index`、`text`、`vector`（Float32Array BLOB）、`enriched` |
+| `edges` | Wikilinks 和 frontmatter 属性 | `source_path`、`target_path`、`link_type` |
+| `tags` | 笔记标签 | `path`、`tag` |
+| `implicit_edges` | 预计算的相似 pairs | `source_path`、`target_path`、`similarity` |
+| `dismissed_pairs` | 用户忽略的隐式连接 | `path_a`、`path_b` |
 
-The database supports three storage locations with a fallback chain:
-- Global: `~/.obsidian-agent/knowledge.db` (shared across vaults, desktop only)
-- Local: `{vault}/.obsidian-agent/knowledge.db`
-- Obsidian Sync: `{vault}/{pluginDir}/knowledge.db`
+数据库支持三种存储位置，具有回退链：
+- 全局：`~/.obsidian-agent/knowledge.db`（跨保险库共享，仅限桌面端）
+- 本地：`{vault}/.obsidian-agent/knowledge.db`
+- Obsidian Sync：`{vault}/{pluginDir}/knowledge.db`
 
-The schema is versioned (currently v5). When a schema change ships, `KnowledgeDB` runs migration logic on open. If the migration fails, the database is recreated from scratch. Re-indexing is fast enough that losing the cache is acceptable.
+模式有版本控制（当前为 v5）。当模式更改发布时，`KnowledgeDB` 在打开时运行迁移逻辑。如果迁移失败，数据库会从头重新创建。重新索引足够快，因此丢失缓存是可以接受的。
 
-## Background enrichment
+## 后台富化
 
-Chunk embeddings get a second pass. The `enriched` flag on each vector row tracks whether contextual prefixes have been added. A background job reads un-enriched chunks and prepends document-level context (file path, heading hierarchy, surrounding content) before re-embedding. A chunk reading "The deadline was moved to Friday" becomes more useful when prefixed with "From: Project Alpha / Status Updates /".
+分块嵌入会经过第二次传递。`vectors` 表中每一行的 `enriched` 标志追踪是否已添加上下文前缀。后台作业读取未富化的分块，在重新嵌入之前预先添加文档级上下文（文件路径、标题层次结构、周围内容）。一条阅读"截止日期已移至周五"的分块在添加了"来自：项目 Alpha / 状态更新 /"前缀后会更有用。
 
-Enrichment runs at low priority during idle time and doesn't block search. Un-enriched chunks are still searchable, just slightly less accurate. On a vault with 5,000 notes, initial indexing takes a few minutes. The enrichment pass follows and can take 10-20 minutes depending on the embedding model's speed.
+富化在空闲时间以低优先级运行，不会阻塞搜索。未富化的分块仍然可搜索，只是准确性稍低。对于包含 5,000 条笔记的保险库，初始索引需要几分钟。富化传递紧随其后，根据嵌入模型的速度可能需要 10-20 分钟。
 
-## Search performance
+## 搜索性能
 
-Vector search uses bulk-loaded vectors with in-JavaScript cosine similarity rather than SQL custom functions. This is 10-50x faster than routing each comparison through the JS-to-WASM bridge per row. The VectorStore (`src/core/knowledge/VectorStore.ts`) loads all vectors into memory once, then searches in pure JS.
+向量搜索使用批量加载的向量，在 JavaScript 中进行余弦相似度计算，而不是通过 SQL 自定义函数。这比通过 JS-to-WASM 桥接器逐行进行每次比较快 10-50 倍。`VectorStore`（`src/core/knowledge/VectorStore.ts`）将所有向量一次性加载到内存中，然后在纯 JS 中搜索。
 
-| Vault size | Vector search | Full pipeline (all 4 stages) |
-|------------|--------------|------|
-| 500 notes | ~50ms | ~200ms |
-| 5,000 notes | ~150ms | ~500ms |
-| 20,000 notes | ~400ms | ~1.2s |
+| 保险库大小 | 向量搜索 | 完整管道（全部 4 阶段） |
+| --- | --- | --- |
+| 500 条笔记 | ~50ms | ~200ms |
+| 5,000 条笔记 | ~150ms | ~500ms |
+| 20,000 条笔记 | ~400ms | ~1.2s |
 
-Reranking is the slowest stage. The cross-encoder runs on CPU via WASM, adding 100-300ms depending on candidate count. You can disable reranking in settings if speed matters more than precision.
+重排序是最慢的阶段。交叉编码器通过 WASM 在 CPU 上运行，根据候选数量增加 100-300ms。如果速度比精度更重要，你可以在设置中禁用重排序。
 
-## How results reach the agent
+## 结果如何传递给智能体
 
-Two tools expose the knowledge layer. `semantic_search` is the direct interface: the agent provides a query and gets ranked results. `search_files` combines keyword matching with semantic search when the knowledge layer is available, falling back to pure keyword search when it isn't.
+两个工具暴露了知识层。`semantic_search` 是直接接口：智能体提供查询并获得排名结果。`search_files` 将关键词匹配与语义搜索相结合（当知识层可用时），当知识层不可用时则回退到纯关键词搜索。
 
-Results include the matching text excerpt, the file path, the relevance score, and (when graph expansion contributed) the connection path that led to the result. This connection context helps the agent explain *why* a note is relevant, not just *that* it is.
+结果包括匹配文本摘要、文件路径、相关性评分，以及（图扩展有贡献时）导致该结果的连接路径。这种连接上下文帮助智能体解释为什么一条笔记是相关的，而不仅仅是它*是*相关的。

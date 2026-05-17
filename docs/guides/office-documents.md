@@ -1,103 +1,67 @@
 ---
-title: Office Documents
-description: Create PPTX, DOCX, and XLSX presentations and documents from your notes.
+title: Office 文档
+description: 如何在 Obsidian 知识库中直接创建和读取 PPTX、DOCX、XLSX 和 PDF 文件。
 ---
 
-# Office documents
+# Office 文档
 
-Obsilo can create PowerPoint presentations, Word documents, and Excel spreadsheets directly inside your vault. It can also read existing office files and use them as context in conversations.
+Obsilo 可以在你的知识库中直接创建 PowerPoint 演示文稿、Word 文档和 Excel 电子表格。它也可以读取这些文件，提取文本和结构用于对话上下文。
 
-## What you can create
+## 创建文档
 
-| Format | Tool | What it produces |
-|--------|------|-----------------|
-| PPTX | `create_pptx` | PowerPoint presentations with slides, text, images, and layouts |
-| DOCX | `create_docx` | Word documents with headings, paragraphs, lists, tables, and images |
-| XLSX | `create_xlsx` | Excel spreadsheets with multiple sheets, formatting, and formulas |
+三个内置工具处理文件创建：
 
-## Simple creation
+- `create_pptx` — PowerPoint 演示文稿
+- `create_docx` — Word 文档
+- `create_xlsx` — Excel 电子表格
 
-The easiest way is to describe what you want:
+每个工具都将二进制文件写入知识库，使用共享的 `writeBinaryToVault()` 工具，并带有路径遍历保护。
 
-- *"Create a presentation about our Q1 results based on my notes in Reports/"*
-- *"Turn this note into a Word document with proper headings and a table of contents"*
-- *"Create a spreadsheet tracking my reading list with columns for title, author, status, and rating"*
+## 创建 PowerPoint
 
-The agent reads the relevant notes, structures the content, and generates the file in your vault.
+PPTX 是最复杂的，因为演示文稿有重要的视觉结构。
 
-:::tip Start simple
-You don't need to specify exact slide layouts or cell formatting. The agent makes reasonable choices. You can refine afterwards by saying "make the title slide more prominent" or "add a chart for the monthly data."
-:::
+### 两种模式
 
-## Template workflow for presentations
+**临时模式**（无模板）：使用 PptxGenJS 从头构建幻灯片。Agent 指定幻灯片内容（标题、项目符号、图片），库生成一个干净但通用的演示文稿。适合快速草稿或没有公司模板时。
 
-For professional or corporate presentations, Obsilo supports a template-based pipeline. This is the best way to create presentations that match your organization's design.
+**模板模式**（有模板）：使用现有的 `.pptx` 模板文件，通过 pptx-automizer 填充内容。你的企业幻灯片模板成为基础，Agent 在保留模板设计、字体和布局的同时填入内容。这是生成演示质量输出的模式。
 
-### How it works
+### plan_presentation 工具
 
-1. You provide a `.pptx` template file in your vault
-2. The agent scans every slide layout, placeholder, and shape in the template (stored as a TemplateCatalog)
-3. An internal LLM call maps your source material to the template's structure, planning content for each slide and shape
-4. The final presentation is built using your template's exact design
+关键步骤发生在生成之前。原始材料（会议记录、研究内容、项目符号）必须转化为结构化的幻灯片内容。
 
-### Step by step
+`plan_presentation` 工具通过专用内部 LLM 调用来解决这个问题：
 
-1. Attach or mention your template: *"Use @corporate-template.pptx to create a presentation about our product roadmap"*
-2. The agent runs `plan_presentation` internally. You'll see it in the activity block.
-3. It creates the final `.pptx` file with your content in your template's design
+1. 读取源材料和模板目录
+2. 从源材料中提取关键信息
+3. 从目录中选择合适的幻灯片类型
+4. 为每个幻灯片上的每个非装饰性形状生成内容
+5. 根据目录验证计划（所有必需形状都有内容吗？形状名称有效吗？占位符都解析了吗？）
 
-### The 6-step office workflow
+输出是一个 `DeckPlan`，`create_pptx` 直接消费它。将计划与生成分离让你可以在提交文件之前审查和调整计划。
 
-For best results, Obsilo follows a built-in workflow:
+## 读取 Office 文件
 
-1. Context: Gather source material from your vault
-2. Template: Analyze the provided template (or use ad-hoc mode)
-3. Plan: Map content to slides and shapes
-4. Generate: Build the document
-5. Verify: Check for missing placeholders or layout issues
-6. Deliver: Save to your vault and confirm
+读取 Office 文件是相反的方向。`parseDocument` 函数根据文件扩展名路由到专用解析器：
 
-:::info Two modes
-Ad-hoc mode creates presentations from scratch without a template (using PptxGenJS). Template mode uses your corporate `.pptx` file to maintain brand consistency. The agent picks the right mode based on whether you provide a template.
-:::
+| 格式 | 解析器 | 提取内容 |
+|------|--------|----------|
+| PPTX/POTX | `PptxParser` | 幻灯片文本、演讲者备注、幻灯片顺序 |
+| DOCX | `DocxParser` | 段落、标题、表格 |
+| XLSX | `XlsxParser` | 工作表名称、单元格数据、公式 |
+| PDF | `PdfParser` | 页面文本、基本结构 |
+| CSV/JSON | `CsvParser` / `parseJson` | 结构化数据 |
 
-## Reading office documents
+解析后的内容以结构化文本形式返回，Agent 可以用作上下文。
 
-Obsilo can parse existing office files and use their content in conversations:
+## 质量检查
 
-- PPTX: Extracts text from all slides
-- DOCX: Extracts headings, paragraphs, tables
-- XLSX: Extracts sheet data and formulas
-- PDF: Extracts text content
-- CSV: Reads structured data
+某些工具（`create_pptx`、`create_docx`、`create_xlsx`）包含自我检查步骤，Agent 在其中验证输出是否达到质量标准。
 
-How to use it:
-- Drag and drop an office file into the chat
-- Use `@filename.pptx` to mention it
-- Ask: *"Summarize the attached spreadsheet"* or *"What are the key points in this presentation?"*
+对于 PPTX，可以使用 `render_presentation` 工具将 PPTX 文件渲染为图片进行视觉质量检查。
 
-The agent uses the `read_document` tool to parse the file, then works with the extracted content like any other note.
+## 下一步
 
-## Visual QA with LibreOffice
-
-If you have LibreOffice installed on your system, Obsilo can render your generated presentations as images for a visual quality check.
-
-The `render_presentation` tool converts each slide to an image so the agent can review layouts, text overflow, and visual consistency before you open the file yourself.
-
-:::warning LibreOffice required
-Visual QA only works if LibreOffice is installed and accessible from the command line. Without it, the agent skips the visual check and relies on structural validation only.
-:::
-
-## Tips for better documents
-
-1. Provide source material. The more context you give (notes, data, outlines), the better the output.
-2. Be specific about structure. "5 slides with an intro, 3 content slides, and a summary" gives better results than "make a presentation."
-3. Use templates for consistency. If you create presentations regularly, invest in a good template. The agent reuses it perfectly every time.
-4. Iterate. After the first version, ask the agent to adjust specific slides or sections rather than regenerating everything.
-5. Check the activity block. It shows the plan the agent created, so you can understand its choices.
-
-## Next steps
-
-- [Skills, Rules & Workflows](/guides/skills-rules-workflows): Automate your document creation process
-- [Connectors](/guides/connectors): Connect external tools and data sources
-- [Multi-Agent & Tasks](/guides/multi-agent): Delegate document tasks to sub-agents
+- [工具参考](../reference/tools) — 所有内置工具的完整列表
+- [工具系统](../concepts/tool-system) — 工具如何工作的深入解释

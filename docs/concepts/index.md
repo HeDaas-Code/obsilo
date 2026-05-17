@@ -1,67 +1,67 @@
 ---
-title: How Obsilo Works
-description: What Obsilo is, how its layers fit together, and where to start reading the code.
+title: Obsilo 工作原理
+description: 什么是 Obsilo，它的各层如何协同工作，以及从哪里开始阅读代码。
 ---
 
-# How Obsilo works
+# Obsilo 工作原理
 
-Obsilo is an AI agent that runs inside Obsidian as a community plugin. You send it a message, it calls tools to read and change your vault, and it loops until the task is done. That loop, and the infrastructure around it, is what this section explains.
+Obsilo 是一个 AI 智能体，运行在 Obsidian 中作为社区插件使用。你向它发送消息，它调用工具来读取和修改你的保险库（vault），然后循环执行直到任务完成。本节将解释这个循环及其周围的基础设施。
 
-## The mental model
+## 思维模型
 
-Forget chat interfaces for a moment. A chatbot takes your message, generates a response, and stops. Obsilo does something different: it takes your message, generates a response that may include tool calls (read a file, run a search, edit a note), executes those tools, feeds the results back to the language model, and repeats. The loop continues until the model decides it has finished or a safety limit cuts it off.
+暂时忘掉聊天界面。聊天机器人接收你的消息，生成回复，然后停止。Obsilo 做的事情不同：它接收你的消息，生成可能包含工具调用的回复（读取文件、运行搜索、编辑笔记），执行这些工具，将结果反馈给语言模型，然后重复。这个循环持续进行，直到模型决定完成或安全限制将其切断。
 
-That loop is the entire architecture in a nutshell. Everything else, the approval system, the prompt assembly, the memory layer, the mode system, exists to make that loop safe, useful, and extensible.
+这个循环就是整个架构的精髓。其他一切——审批系统、提示组装、记忆层、模式系统——都是为了使这个循环安全、有用和可扩展而存在的。
 
-## Layers
+## 分层架构
 
-Obsilo has four layers. Each one depends only on the layer below it.
+Obsilo 有四个层级。每一层只依赖于它下面的层。
 
 ```mermaid
 flowchart TD
-    UI["UI Layer"]
-    Core["Core Layer"]
-    Services["Service Layer"]
-    Storage["Storage Layer"]
+    UI["UI 层"]
+    Core["核心层"]
+    Services["服务层"]
+    Storage["存储层"]
 
     UI --> Core
     Core --> Services
     Services --> Storage
 ```
 
-The UI layer is the sidebar, settings panel, and modals. It sends user messages down and renders whatever comes back up.
+UI 层是侧边栏、设置面板和模态框。它向下发送用户消息，并向上渲染返回的任何内容。
 
-The core layer is where the agent loop lives. `AgentTask` orchestrates the conversation, `ToolExecutionPipeline` governs every tool call, and the system prompt builder assembles the instructions that tell the model what it can do.
+核心层是智能体循环所在的地方。`AgentTask` 编排对话，`ToolExecutionPipeline` 管理每个工具调用，系统提示构建器组装告诉模型可以做什么的指令。
 
-The service layer contains domain logic: semantic search, memory, MCP integration, office document generation, the skill system, and the code sandbox. The core layer calls into these services when it executes tools.
+服务层包含领域逻辑：语义搜索、记忆、MCP 集成、Office 文档生成、技能系统和代码沙箱。核心层在执行工具时调用这些服务。
 
-The storage layer is Obsidian's vault. All reads and writes go through `app.vault` and `app.fileManager`, never through raw filesystem calls. This keeps Obsilo compatible with Obsidian's sync, indexing, and plugin ecosystem.
+存储层是 Obsidian 的保险库（vault）。所有读写都通过 `app.vault` 和 `app.fileManager`，从不通过原始文件系统调用。这使 Obsilo 与 Obsidian 的同步、索引和插件生态系统兼容。
 
-## Design principles
+## 设计原则
 
-Obsilo is local-first. Your data never leaves your machine except for API calls to the AI provider you configured. No cloud services, no telemetry, no accounts.
+Obsilo 是本地优先的。你的数据永远不会离开你的机器，除了到你配置的 AI 提供商的 API 调用。没有云服务、没有遥测、没有账户。
 
-The safety model is fail-closed. Write operations require explicit user approval by default. If the approval callback is missing or broken, the pipeline rejects the operation. This logic lives in `ToolExecutionPipeline`, not in individual tools, so no single tool can bypass it.
+安全模型是失败关闭的。写操作默认需要用户明确批准。如果批准回调缺失或损坏，管道会拒绝该操作。这个逻辑在 `ToolExecutionPipeline` 中，而不是在各个工具中，因此没有单个工具可以绕过它。
 
-The plugin is a platform. You can extend it with MCP servers for external tool integration, write your own skills to teach the agent new behaviors, and use the sandbox to run code at runtime. The agent can inspect its own logs and create new skills, but always under your supervision.
+插件是一个平台。你可以通过 MCP 服务器扩展它以进行外部工具集成，编写自己的技能来教智能体新行为，并使用沙箱在运行时运行代码。智能体可以检查自己的日志并创建新技能，但始终在你的监督下进行。
 
-## Directory structure
+## 目录结构
 
-| Directory | What's in it |
+| 目录 | 内容 |
 |-----------|-------------|
-| `src/core/` | AgentTask, pipeline, system prompt, modes, governance, checkpoints |
-| `src/core/tools/` | 49 tool implementations (vault, web, agent, MCP, dynamic) |
-| `src/core/tool-execution/` | Execution pipeline, repetition detector, operation logger |
-| `src/core/prompts/sections/` | 16 modular prompt section builders |
-| `src/api/` | AI provider abstraction (Anthropic, OpenAI) |
-| `src/ui/` | Sidebar, settings, modals, onboarding |
-| `src/i18n/` | Internationalization (EN, DE) |
-| `src/types/` | Shared TypeScript types and settings |
+| `src/core/` | AgentTask、管道、系统提示、模式、治理、检查点 |
+| `src/core/tools/` | 49 个工具实现（vault、web、agent、MCP、动态） |
+| `src/core/tool-execution/` | 执行管道、重复检测器、操作日志 |
+| `src/core/prompts/sections/` | 16 个模块化提示部分构建器 |
+| `src/api/` | AI 提供商抽象（Anthropic、OpenAI） |
+| `src/ui/` | 侧边栏、设置、模态框、首次使用引导 |
+| `src/i18n/` | 国际化（英文、德文） |
+| `src/types/` | 共享 TypeScript 类型和设置 |
 
-## Kilo Code heritage
+## Kilo Code 传承
 
-Obsilo's core loop and tool architecture are adapted from Kilo Code, an open-source AI coding agent. The adaptation replaces filesystem operations with Obsidian's vault API, adds governance layers for approval and checkpointing, and introduces domain-specific tools for knowledge management.
+Obsilo 的核心循环和工具架构改编自 Kilo Code，这是一个开源的 AI 编码智能体。该改编用 Obsidian 的保险库 API 替换了文件系统操作，添加了用于批准和检查点的治理层，并引入了用于知识管理的领域特定工具。
 
-## Where to read next
+## 后续阅读
 
-Start with the [agent loop](./agent-loop), the most important page in this section. It explains how a message becomes a multi-step task. From there, the [tool system](./tool-system) covers how tools are registered, validated, and executed. The [governance page](./governance) explains the approval and safety model.
+从[智能体循环](./agent-loop)开始，这是本节中最重要的页面。它解释了消息如何变成多步骤任务。从那里，[工具系统](./tool-system)涵盖了工具如何注册、验证和执行。[治理页面](./governance)解释了批准和安全模型。
