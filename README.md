@@ -1,10 +1,11 @@
 # Obsilo Agent
 
-**面向 Obsidian 的 Agentic AI（默认中文说明）。**
+**面向 Obsidian 的 Agentic AI（中文增强版，默认中文文档）。**
 
 > [!IMPORTANT]
 > 本仓库（`HeDaas-Code/obsilo`）是 `pssah4/obsilo` 的 fork 版本。  
-> 本 fork 默认以中文文档与说明为主，并会根据本 fork 的改动持续更新。
+> 本 fork 命名为 **Obsilo 中文增强版**，默认以中文文档与说明为主，并会根据本 fork 的改动持续更新。  
+> 英文原始文档已保存在 `docs/en`。
 
 这是一个为 Obsidian 知识库提供自主式 AI 能力的运行层：内置 49+ 工具、语义检索、持久化记忆、多智能体流程、Office 文档生成与完整安全控制。支持 10+ 模型/服务提供方。Local-first，开源免费。
 
@@ -96,6 +97,7 @@ Chat-linking adds frontmatter references back to conversations, so you can trace
 | Azure OpenAI | Enterprise | API key + endpoint | Enterprise compliance and private endpoints. |
 | GitHub Copilot | Gateway | OAuth | Uses your existing Copilot subscription. No separate API key. |
 | Kilo Gateway | Gateway | Device auth / token | Centralized gateway with organization context. |
+| MiniMax | Cloud | API key | Anthropic-compatible endpoint with multilingual translation and function calling support. |
 | Ollama | Local | None | Free, fully private. Many open-source models. |
 | LM Studio | Local | None | Free, fully private. Visual model browser. |
 | Custom | Any | Varies | Any OpenAI-compatible endpoint. |
@@ -186,6 +188,9 @@ This plugin makes network requests depending on your configuration:
 ## Documentation
 
 Full documentation: **[www.obsilo.ai](https://www.obsilo.ai)**
+
+- 中文文档（默认）：`docs/`
+- 英文原始文档：`docs/en/`
 
 **Getting Started**
 - [Installation & Quick Start](https://www.obsilo.ai/guide/getting-started)

@@ -1,10 +1,7 @@
 ---
-title: 关于
-description: Obsilo 中文增强版 fork 说明与项目背景。
+title: About
+description: Sebastian Hanke, creator of Obsilo Agent, an agentic AI operating layer for Obsidian.
 ---
-
-> 本站点为 `HeDaas-Code/obsilo` 维护的 **Obsilo 中文增强版** 文档。  
-> 原始英文文档已保留在 `/en` 路径与 `docs/en` 目录中。
 
 <div style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap; margin-bottom: 2rem;">
   <img src="/assets/AD7E0394-7084-4038-99B8-90C331AEF7BF_1_105_c.jpeg" alt="Sebastian Hanke" style="width: 140px; height: 140px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">

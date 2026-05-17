@@ -15,31 +15,31 @@ type Prompt = string | ComplexPrompt
 const prompts: Prompt[] = [
   {
     segments: [
-      { type: 'text', value: 'Find all Notes related to ' },
+      { type: 'text', value: '查找所有与 ' },
       { type: 'mention', typed: 'Agenti', full: 'AgenticAI', file: 'AgenticAI.md' },
-      { type: 'text', value: ' and create a Base.' },
+      { type: 'text', value: ' 相关的笔记，并创建一个 Base。' },
     ],
   },
-  'Create a Canvas based on this Base that shows the relationships between the Notes.',
-  'Describe the connections between these Notes in the created Canvas and label the arrows.',
-  'Show me all meeting notes from January for meetings with John Doe.',
+  '基于这个 Base 创建一个 Canvas，展示这些笔记的关系。',
+  '在已创建的 Canvas 里描述这些笔记之间的联系，并给连线加标签。',
+  '展示一月份所有与 John Doe 会议相关的会议记录。',
   {
     segments: [
-      { type: 'text', value: 'Create a summary of this meeting ' },
+      { type: 'text', value: '把这次会议 ' },
       { type: 'mention', typed: 'proce', full: 'process-analysis-sales-dpt', file: 'process-analysis-sales-dpt.md' },
-      { type: 'text', value: ' as a new Meeting Note.' },
+      { type: 'text', value: ' 总结为一条新的会议笔记。' },
     ],
   },
-  'Create a draw.io diagram that visualizes the process from this meeting as a flowchart.',
+  '创建一个 draw.io 流程图，把这次会议里的流程可视化。',
   {
     segments: [
-      { type: 'text', value: 'Summarize this brainstorming in ' },
+      { type: 'text', value: '总结这场头脑风暴 ' },
       { type: 'mention', typed: 'produ', full: 'product-launch-ideas', file: 'product-launch-ideas.md' },
-      { type: 'text', value: ' and visualize the ideas in an Excalidraw graphic.' },
+      { type: 'text', value: '，并用 Excalidraw 图形可视化这些想法。' },
     ],
   },
-  'Change the tags in the metadata of all Notes from "agenticai" to "Agentic-AI".',
-  'Search the internet for the latest Python release and create a summary note.',
+  '把所有笔记元数据中的标签从 "agenticai" 批量改为 "Agentic-AI"。',
+  '联网搜索最新 Python 版本并创建摘要笔记。',
 ]
 
 
@@ -175,10 +175,10 @@ onMounted(() => {
   <section class="landing-hero">
     <a href="/releases/v2.4" class="landing-badge">
       <span class="landing-badge-version">v2.4.2</span>
-      <span>LLM provider fixes, community plugin compliance</span>
+      <span>提供商修复与社区插件合规更新</span>
     </a>
 
-    <h1 class="landing-title">Your Obsidian vault,<br>with a real AI Agent.</h1>
+    <h1 class="landing-title">你的 Obsidian 知识库，<br>现在配上真正的 AI Agent。</h1>
 
     <div class="landing-chat">
       <div class="landing-chat-header">
@@ -194,17 +194,17 @@ onMounted(() => {
       </div>
     </div>
 
-    <p class="landing-sub">Learns your vault, your rules, your workflows.</p>
+    <p class="landing-sub">学习你的知识库、你的规则、你的工作流。</p>
     <p class="landing-detail">
-      49 tools, hybrid semantic search, knowledge graph, 3-tier memory,<br>
-      multi-agent workflows, plugin discovery, office document creation, and full safety controls.<br>
-      Local-first. Open source. Always free.
+      49+ 工具、混合语义检索、知识图谱、三层记忆、<br>
+      多智能体工作流、插件发现、Office 文档生成与完整安全控制。<br>
+      Local-first，开源，永久免费。英文原始文档请见 /en。
     </p>
 
     <div class="landing-cta">
-      <a href="/tutorials/getting-started" class="landing-btn-primary">Get Started</a>
+      <a href="/tutorials/getting-started" class="landing-btn-primary">快速开始</a>
       <a href="/guides/capabilities" class="landing-btn-secondary">
-What Obsilo Can Do
+了解 Obsilo 能力
       </a>
     </div>
   </section>
