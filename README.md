@@ -1,8 +1,14 @@
 # Obsilo Agent
 
-**Agentic AI for Obsidian.**
+**面向 Obsidian 的 Agentic AI（默认中文说明）。**
 
-An autonomous AI operating layer for your Obsidian vault. 49+ tools, semantic search, persistent memory, multi-agent workflows, office document creation, and full safety controls. Works with 10+ providers. Local-first. Open source. Free.
+> [!IMPORTANT]
+> 本仓库是 `HeDaas-Code/obsilo` 的 fork 版本，上游项目为 `pssah4/obsilo`。  
+> 本 fork 默认以中文文档与说明为主，并会根据本 fork 的改动持续更新。
+
+这是一个为 Obsidian 知识库提供自主式 AI 能力的运行层：内置 49+ 工具、语义检索、持久化记忆、多智能体流程、Office 文档生成与完整安全控制。支持 10+ 模型/服务提供方。Local-first，开源免费。
+
+> English summary: An autonomous AI operating layer for your Obsidian vault. 49+ tools, semantic search, persistent memory, multi-agent workflows, office document creation, and full safety controls. Works with 10+ providers. Local-first. Open source. Free.
 
 [www.obsilo.ai](https://www.obsilo.ai)
 
