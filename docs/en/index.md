@@ -7,7 +7,7 @@ description: Original English documentation snapshot preserved for the Obsilo Ch
 
 This directory keeps the original English docs for this fork.
 
-- Tutorials: [/en/tutorials/getting-started](/en/tutorials/getting-started)
-- Guides: [/en/guides/capabilities](/en/guides/capabilities)
-- Reference: [/en/reference/tools](/en/reference/tools)
-- Concepts: [/en/concepts/index](/en/concepts/index)
+- Tutorials: [tutorials/getting-started](./tutorials/getting-started)
+- Guides: [guides/capabilities](./guides/capabilities)
+- Reference: [reference/tools](./reference/tools)
+- Concepts: [concepts/index](./concepts/index)
