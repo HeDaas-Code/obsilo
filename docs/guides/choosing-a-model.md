@@ -1,111 +1,111 @@
 ---
-title: Choosing a Model
-description: Understand AI providers, how to configure them, and what matters for a good Obsilo experience.
+title: 选择模型
+description: 了解 AI 提供商、如何配置它们，以及获得良好 Obsilo 体验的关键因素。
 ---
 
-# Choosing a model
+# 选择模型
 
-Obsilo works with many providers and models. Not all are equally good at being agents.
+Obsilo 支持多种提供商和模型。并非所有模型都同样适合作为代理使用。
 
-## What makes a good model for Obsilo
+## 什么样的模型适合 Obsilo
 
-Obsilo is an agent, not a chat assistant. The model needs to:
+Obsilo 是一个代理，而非聊天助手。模型需要：
 
-- Support tool use (function calling). It must call Obsilo's 49 tools.
-- Follow instructions precisely. The system prompt is complex, with rules, skills, and mode definitions.
-- Reason about multi-step tasks. Reading files, searching, editing, and verifying requires planning.
+- 支持工具使用（函数调用）。它必须调用 Obsilo 的 49 个工具。
+- 精确遵循指令。系统提示词很复杂，包含规则、技能和模式定义。
+- 能够对多步骤任务进行推理。读取文件、搜索、编辑和验证需要规划能力。
 
-:::tip Use the latest, most capable models
-Obsilo works best with strong frontier models that excel at tool use and reasoning. Older or smaller models may struggle with complex tasks, skip approval steps, or call the wrong tools. Testing has been done primarily with Anthropic Claude models.
+:::tip 使用最新、最强大的模型
+Obsilo 在表现出色的前沿模型上效果最佳，这些模型在工具使用和推理方面表现优异。老旧或较小的模型可能在复杂任务上遇到困难，跳过审批步骤，或调用错误的工具。测试主要在 Anthropic Claude 模型上进行。
 :::
 
-For background tasks like memory extraction, chat titling, or contextual retrieval, a cheap model is fine. These tasks are simple and don't require tool use.
+对于后台任务（如记忆提取、聊天标题生成或上下文检索），使用便宜的模型即可。这些任务很简单，不需要工具使用。
 
-## Provider categories
+## 提供商类别
 
-Obsilo supports three categories of providers, each with different trade-offs.
+Obsilo 支持三类提供商，每类都有不同的权衡。
 
-### Cloud providers (API key)
+### 云端提供商（API 密钥）
 
-You create an account, get an API key, and pay per usage. Best quality and reliability.
+您创建一个账户，获取 API 密钥，按使用量付费。质量和可靠性最高。
 
-| Provider | How to get started | What you get |
-|----------|--------------------|--------------|
-| **Anthropic** | Create account at [console.anthropic.com](https://console.anthropic.com), generate API key (starts with `sk-ant-...`) | Claude model family. Best tool use in testing. |
-| **OpenAI** | Create account at [platform.openai.com](https://platform.openai.com), generate API key (starts with `sk-...`) | GPT model family. Fast, good structured output. |
-| **OpenRouter** | Create account at [openrouter.ai](https://openrouter.ai), generate API key (starts with `sk-or-...`) | 100+ models from many providers with a single key. Some free tiers. |
-| **Azure OpenAI** | Enterprise deployment through Azure portal | OpenAI models with enterprise compliance and private endpoints. |
+| 提供商 | 如何开始 | 你将获得 |
+|--------|----------|---------|
+| **Anthropic** | 在 [console.anthropic.com](https://console.anthropic.com) 创建账户，生成 API 密钥（以 `sk-ant-...` 开头） | Claude 模型系列。在工具使用测试中表现最佳。 |
+| **OpenAI** | 在 [platform.openai.com](https://platform.openai.com) 创建账户，生成 API 密钥（以 `sk-...` 开头） | GPT 模型系列。速度快，结构化输出优秀。 |
+| **OpenRouter** | 在 [openrouter.ai](https://openrouter.ai) 创建账户，生成 API 密钥（以 `sk-or-...` 开头） | 来自多个提供商的 100+ 模型，一个密钥搞定。部分有免费层级。 |
+| **Azure OpenAI** | 通过 Azure 门户进行企业部署 | OpenAI 模型，具有企业合规性和私有端点。 |
 
-### Gateway providers (login-based)
+### 网关提供商（基于登录）
 
-No API key needed. You sign in with an existing account.
+无需 API 密钥。您使用现有账户登录。
 
-| Provider | How to get started | What you get |
-|----------|--------------------|--------------|
-| **GitHub Copilot** | Click "Sign in with GitHub" in the model config. A device code appears; enter it at github.com/login/device. Requires an active Copilot subscription. | Multiple frontier models through your existing Copilot subscription. No separate API key. Uses an unofficial API (models may change). |
-| **Kilo Gateway** | Click "Sign in" in the model config, or paste an API token directly. | Centralized gateway to multiple frontier models. Organization context, dynamic model listing, managed access. |
+| 提供商 | 如何开始 | 你将获得 |
+|--------|----------|---------|
+| **GitHub Copilot** | 在模型配置中点击"使用 GitHub 登录"。将显示设备代码；在 github.com/login/device 输入。需要一个有效的 Copilot 订阅。 | 通过现有 Copilot 订阅访问多个前沿模型。无需单独的 API 密钥。使用非官方 API（模型可能变化）。 |
+| **Kilo Gateway** | 在模型配置中点击"登录"，或直接粘贴 API 令牌。 | 访问多个前沿模型的集中网关。支持组织上下文、动态模型列表和托管访问。 |
 
-### Local providers (free, private)
+### 本地提供商（免费、私密）
 
-Models run on your machine. No data leaves your device. Free, but needs decent hardware (8GB+ RAM recommended).
+模型在您的机器上运行。数据不会离开您的设备。免费使用，但需要不错的硬件（建议 8GB+ 内存）。
 
-| Provider | How to get started | What you get |
-|----------|--------------------|--------------|
-| **Ollama** | Install from [ollama.ai](https://ollama.ai). Pull a model: `ollama pull llama3.2`. The server starts automatically at `http://localhost:11434`. | Many open-source models. Best local experience. Pick a model that supports tool use. |
-| **LM Studio** | Install from [lmstudio.ai](https://lmstudio.ai). Download a model in the app, then start the local server from the Developer tab. | Visual model browser, easy setup. Default URL: `http://localhost:1234`. |
-| **Custom** | Any server with an OpenAI-compatible API. Enter the base URL (with `/v1` suffix) and optional API key. | For self-hosted inference servers, corporate proxies, or any compatible endpoint. |
+| 提供商 | 如何开始 | 你将获得 |
+|--------|----------|---------|
+| **Ollama** | 从 [ollama.ai](https://ollama.ai) 安装。拉取模型：`ollama pull llama3.2`。服务器会在 `http://localhost:11434` 自动启动。 | 多种开源模型。最佳本地体验。选择支持工具使用的模型。 |
+| **LM Studio** | 从 [lmstudio.ai](https://lmstudio.ai) 下载安装。在应用中下载模型，然后从 Developer 选项卡启动本地服务器。 | 可视化模型浏览器，易于设置。默认 URL：`http://localhost:1234`。 |
+| **自定义** | 任何具有 OpenAI 兼容 API 的服务器。输入基础 URL（带 `/v1` 后缀）和可选的 API 密钥。 | 适用于自托管推理服务器、企业代理或任何兼容端点。 |
 
-## How to add a model in Obsilo
+## 如何在 Obsilo 中添加模型
 
-1. Open **Settings > Obsilo Agent > Models**
-2. Click **"+ add model"**
-3. Select a **provider** from the dropdown
-4. Follow the provider-specific instructions:
-   - API key providers: Paste your key, select or enter a model ID
-   - GitHub Copilot: Click "Sign in with GitHub", complete the device flow
-   - Kilo Gateway: Click "Sign in" or paste a token
-   - Local providers: Enter the base URL, click "Browse installed models" to pick one
-5. Optionally set a display name and adjust temperature and max tokens
-6. Click **Add**
+1. 打开 **设置 > Obsilo Agent > 模型**
+2. 点击 **"+ 添加模型"**
+3. 从下拉菜单中选择一个**提供商**
+4. 按照提供商特定的说明操作：
+   - API 密钥提供商：粘贴您的密钥，选择或输入模型 ID
+   - GitHub Copilot：点击"使用 GitHub 登录"，完成设备流程
+   - Kilo Gateway：点击"登录"或粘贴令牌
+   - 本地提供商：输入基础 URL，点击"浏览已安装模型"选择一个
+5. （可选）设置显示名称并调整温度和最大令牌数
+6. 点击**添加**
 
-:::info Quick pick
-For API-key providers, the "Quick pick" dropdown shows popular models with pre-filled IDs. For Ollama and LM Studio, the "Browse installed/available models" button fetches what is running on your local server.
+:::info 快速选择
+对于 API 密钥提供商，"快速选择"下拉菜单显示流行模型，已预填 ID。对于 Ollama 和 LM Studio，"浏览已安装/可用模型"按钮会获取本地服务器上运行的模型。
 :::
 
-## Using different models for different tasks
+## 为不同任务使用不同模型
 
-You don't have to use the same model everywhere. Obsilo lets you assign models per context:
+您不必在所有地方使用同一个模型。Obsilo 允许您按上下文分配模型：
 
-- **Per-mode models:** In Settings > Modes, each mode can override the default model. Use a strong model for Agent mode and a cheaper one for Ask mode.
-- **Memory model:** In Settings > Memory, pick a small model for background extraction (it only summarizes conversations).
-- **Chat titling model:** In Settings > Interface > Chat Linking, pick a small model for generating conversation titles.
-- **Contextual retrieval model:** In Settings > Embeddings, pick a cheap model for enriching search chunks in the background.
+- **按模式分配模型：** 在设置 > 模式中，每个模式可以覆盖默认模型。在代理模式下使用强大的模型，在问答模式下使用便宜的模型。
+- **记忆模型：** 在设置 > 记忆中，选择一个小模型用于后台提取（它只总结对话）。
+- **聊天标题模型：** 在设置 > 界面 > 聊天链接中，选择一个小模型用于生成对话标题。
+- **上下文检索模型：** 在设置 > 嵌入中，选择一个便宜的模型用于后台增强搜索块。
 
-A typical setup: one frontier model for interactive work, one lightweight model for everything in the background.
+典型配置：一个前沿模型用于交互工作，一个轻量级模型用于所有后台任务。
 
-## Embedding models
+## 嵌入模型
 
-Semantic search needs a separate embedding model. This specialized model converts text into vectors for similarity search.
+语义搜索需要一个单独的嵌入模型。这个专业模型将文本转换为向量用于相似性搜索。
 
-Configure it in **Settings > Embeddings > add embedding model**. Popular choices:
-- Any OpenAI-compatible embedding endpoint
-- Local embedding models via Ollama (e.g., `nomic-embed-text`)
-- GitHub Copilot and Kilo Gateway also support embedding models
+在 **设置 > 嵌入 > 添加嵌入模型** 中配置。常用选择：
+- 任何 OpenAI 兼容的嵌入端点
+- 通过 Ollama 的本地嵌入模型（如 `nomic-embed-text`）
+- GitHub Copilot 和 Kilo Gateway 也支持嵌入模型
 
-The embedding model only affects search quality. It has no effect on chat responses.
+嵌入模型只会影响搜索质量。它不会影响聊天响应。
 
-## Cost considerations
+## 成本考虑
 
-| Approach | Monthly cost | Notes |
-|----------|-------------|-------|
-| Local only (Ollama/LM Studio) | Free | Requires capable hardware. Quality depends on model size. |
-| Free tiers (OpenRouter, Google) | Free | Rate-limited. Good for light usage. |
-| GitHub Copilot | Included in subscription | If you already pay for Copilot, no extra cost. |
-| Cloud API (light usage) | $5--15 | A few conversations per day. |
-| Cloud API (heavy usage) | $20--50+ | Daily power user with complex tasks. |
+| 方案 | 月费 | 说明 |
+|------|------|------|
+| 仅本地（Ollama/LM Studio） | 免费 | 需要有能力的硬件。质量取决于模型大小。 |
+| 免费层级（OpenRouter、Google） | 免费 | 有速率限制。适合轻度使用。 |
+| GitHub Copilot | 包含在订阅中 | 如果你已经为 Copilot 付费，无需额外费用。 |
+| 云端 API（轻度使用） | $5-15 | 每天几次对话。 |
+| 云端 API（重度使用） | $20-50+ | 每天使用的重度用户，处理复杂任务。 |
 
-## Next steps
+## 下一步
 
-- [Chat interface](/guides/chat-interface): Deep dive into the chat experience
-- [Knowledge discovery](/guides/knowledge-discovery): Set up semantic search (needs an embedding model)
-- [Providers reference](/reference/providers): Detailed step-by-step setup for each provider
+- [聊天界面](/guides/chat-interface)：深入了解聊天体验
+- [知识发现](/guides/knowledge-discovery)：设置语义搜索（需要嵌入模型）
+- [提供商参考](/reference/providers)：每个提供商的详细分步设置

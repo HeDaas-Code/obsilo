@@ -1,89 +1,89 @@
 ---
-title: Multi-Agent & Tasks
-description: Sub-tasks, task extraction, and how Obsilo delegates work to child agents.
+title: 多代理与任务
+description: 子任务、任务提取以及 Obsilo 如何将工作委托给子代理。
 ---
 
-# Multi-agent & tasks
+# 多代理与任务
 
-For complex work, a single agent conversation can get unwieldy. Obsilo handles this with sub-agents: child agents that take on specific parts of a larger task independently. It also extracts actionable tasks from conversations and turns them into trackable notes.
+对于复杂的工作，单独的代理对话可能会变得难以管理。Obsilo 通过子代理来处理这个问题：子代理是承担更大任务中特定部分的独立实例。Obsilo 还会从对话中提取可操作的任务，并将其转化为可追踪的笔记。
 
-## What are sub-agents?
+## 什么是子代理？
 
-A sub-agent is a separate agent instance spawned by the main agent. It gets its own conversation, its own mode, and its own tool access. The parent agent delegates a specific job, waits for the result, and continues with its own work.
+子代理是由主代理生成的独立代理实例。它拥有自己的对话、自己的模式和自己独立的工具访问权限。父代理委托特定的工作给它，等待结果，然后继续自己的任务。
 
-### When sub-agents help
+### 子代理适用的场景
 
-- Research fan-out: search multiple topics in parallel instead of sequentially
-- Divide and conquer: break a large task into independent pieces
-- Mode isolation: run a read-only analysis in Ask mode while the parent works in Agent mode
-- Long tasks: keep the main conversation focused while a sub-agent handles a side task
+- 研究分发：并行搜索多个主题，而非顺序搜索
+- 分而治之：将大任务拆分为独立的部分
+- 模式隔离：在父代理以代理模式工作的同时，用提问模式运行只读分析
+- 长时任务：让子代理处理辅助任务，保持主对话聚焦
 
-## How `new_task` works
+## `new_task` 的工作原理
 
-The agent spawns sub-agents using the `new_task` tool. You don't call this tool directly. The agent decides when delegation makes sense.
+代理使用 `new_task` 工具来生成子代理。你不需要直接调用这个工具。代理自行判断何时适合进行委托。
 
-### What the agent specifies
+### 代理指定的内容
 
-| Parameter | Purpose |
+| 参数 | 用途 |
 |-----------|---------|
-| Mode | Which mode the child agent runs in (Ask or Agent) |
-| Message | The specific task description for the child |
-| Context | Relevant information passed from the parent conversation |
+| 模式 | 子代理运行的模式（提问或代理） |
+| 消息 | 给子代理的特定任务描述 |
+| 上下文 | 从父对话传递过来的相关信息 |
 
-### Depth guard
+### 深度限制
 
-Sub-agents can spawn their own sub-agents, but Obsilo enforces a maximum depth of 2 levels. This prevents runaway chains:
+子代理可以生成自己的子代理，但 Obsilo 强制规定最大深度为 2 层。这可以防止失控的链条：
 
 ```
-Main Agent (level 0)
-  -> Sub-Agent A (level 1)
-      -> Sub-Agent A1 (level 2, maximum depth, cannot spawn further)
-  -> Sub-Agent B (level 1)
+主代理 (第 0 层)
+  -> 子代理 A (第 1 层)
+      -> 子代理 A1 (第 2 层，最大深度，无法再生成子代理)
+  -> 子代理 B (第 1 层)
 ```
 
-### Parallel execution
+### 并行执行
 
-Read-safe tools (searching, reading files, semantic search) run in parallel using `Promise.all`. A sub-agent researching three topics searches for all three simultaneously, not one after another.
+读取安全的工具（搜索、读取文件、语义搜索）使用 `Promise.all` 并行运行。研究三个主题的子代理会同时搜索所有三个主题，而不是逐个进行。
 
-:::tip You don't need to manage this
-Sub-agent orchestration is automatic. Describe your goal and the agent decides whether to delegate. For example: *"Research these 5 companies and create a comparison table"* might spawn sub-agents for each company.
+:::tip 你无需手动管理
+子代理的编排是自动的。描述你的目标，代理自行决定是否进行委托。例如：*"研究这 5 家公司并创建对比表"* 可能会为每家公司生成子代理。
 :::
 
-## Practical examples
+## 实际示例
 
-### Research fan-out
+### 研究分发
 
-Your prompt: *"Compare the note-taking approaches described in my notes about Zettelkasten, PARA, and Johnny Decimal"*
+你的提示：*"比较我的笔记中描述的 Zettelkasten、PARA 和 Johnny Decimal 这三种笔记方法"*
 
-What happens:
-1. The main agent spawns 3 sub-agents, one for each system
-2. Each sub-agent searches and reads the relevant notes
-3. Results return to the parent agent
-4. The parent creates the comparison
+执行流程：
+1. 主代理生成 3 个子代理，每个系统一个
+2. 每个子代理搜索并读取相关笔记
+3. 结果返回给父代理
+4. 父代理创建对比表
 
-### Divide and conquer
+### 分而治之
 
-Your prompt: *"Reorganize my Projects/ folder. Group notes by status (active, completed, on hold) and create an index note"*
+你的提示：*"重新组织我的 Projects/ 文件夹。按状态（进行中、已完成、暂停）对笔记进行分组，并创建索引笔记"*
 
-What happens:
-1. A sub-agent analyzes all notes and classifies them by status
-2. The parent agent creates the folder structure and moves files
-3. A final sub-agent generates the index note with links
+执行流程：
+1. 子代理分析所有笔记并按状态分类
+2. 父代理创建文件夹结构并移动文件
+3. 最后的子代理生成带链接的索引笔记
 
-## Task extraction
+## 任务提取
 
-Obsilo watches for actionable items in agent responses. When the agent produces a list with unchecked checkboxes (`- [ ]`), the TaskExtractor detects them automatically.
+Obsilo 会监听代理回复中的可操作项。当代理生成带未选中复选框的列表（`- [ ]`）时，任务提取器会自动检测它们。
 
-### How it works
+### 工作原理
 
-1. The agent responds with tasks in its message (e.g., a project plan with action items)
-2. Obsilo detects the `- [ ]` items
-3. A TaskSelectionModal appears, letting you pick which tasks to save
-4. Selected tasks become individual notes in your vault
+1. 代理在消息中以任务形式回复（例如：包含行动项的项目计划）
+2. Obsilo 检测到 `- [ ]` 项目
+3. 弹出任务选择模态框，让你选择要保存的任务
+4. 选中的任务成为知识库中的独立笔记
 
-### Task notes
+### 任务笔记
 
-Each extracted task becomes a note with structured frontmatter:
+每个提取的任务都会成为带有结构化 frontmatter 的笔记：
 
 ```markdown
 ---
@@ -93,32 +93,32 @@ source: agent-conversation
 created: 2026-03-31
 ---
 
-# Review Q1 budget allocations
+# 审查 Q1 预算分配
 
-Compare actual spending against planned budget for each department.
-Highlight any variance above 10%.
+比较每个部门的实际支出与计划预算。
+标出超过 10% 的差异。
 ```
 
-This works with your existing task management: Dataview queries, kanban boards, or any plugin that reads frontmatter.
+这与你现有的任务管理方式兼容：Dataview 查询、看板面板或任何读取 frontmatter 的插件都适用。
 
-:::info Not just agent tasks
-Task extraction works on any checklist the agent produces: project plans, follow-ups from meeting notes, research next steps. If the agent writes `- [ ]` items, you can capture them.
+:::info 不仅限于代理任务
+任务提取适用于代理生成的任何清单：项目计划、会议纪要的后续行动、研究的下一步。如果代理写了 `- [ ]` 项目，你都可以捕获它们。
 :::
 
-## Tips for multi-agent work
+## 多代理工作技巧
 
-1. Be ambitious. Multi-step requests like "research, compare, and summarize" are exactly what sub-agents handle well.
-2. Provide scope. Mention specific folders, tags, or file names so sub-agents know where to look.
-3. Check the activity block. You can see each sub-agent's tool calls in the parent's activity view.
-4. Use task extraction. When the agent gives you a plan, let it create task notes so nothing falls through the cracks.
-5. Trust the depth limit. Two levels of sub-agents handle most real-world scenarios. If you need more, break the work into separate conversations.
+1. 大胆尝试。多步骤请求（如"研究、比较并总结"）正是子代理擅长的任务类型。
+2. 提供范围。提及具体的文件夹、标签或文件名，让子代理知道从哪里查找。
+3. 查看活动块。你可以在父代理的活动视图中看到每个子代理的工具调用。
+4. 使用任务提取。当代理给你一个计划时，让它创建任务笔记，以免遗漏任何事项。
+5. 信任深度限制。两层子代理可以处理大多数实际场景。如果你需要更多，请将工作拆分为独立的对话。
 
-:::warning Model quality matters
-Sub-agents consume additional API calls. Each child agent has its own conversation with the model. Use a capable model (Claude Sonnet or better) for multi-agent tasks. Smaller models may struggle with delegation decisions.
+:::warning 模型质量很重要
+子代理会消耗额外的 API 调用。每个子代理都与模型有独立的对话。在多代理任务中使用有能力的模型（Claude Sonnet 或更高版本）。较小的模型可能在委托决策上遇到困难。
 :::
 
-## Next steps
+## 下一步
 
-- [Skills, Rules & Workflows](/guides/skills-rules-workflows): Create workflows that use sub-agents
-- [Office Documents](/guides/office-documents): Delegate document creation to sub-agents
-- [Connectors](/guides/connectors): Connect external tools for sub-agents to use
+- [技能、规则与工作流](/guides/skills-rules-workflows)：创建使用子代理的工作流
+- [办公文档](/guides/office-documents)：将文档创建委托给子代理
+- [连接器](/guides/connectors)：连接子代理可以使用的外部工具

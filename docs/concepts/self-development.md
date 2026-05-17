@@ -1,76 +1,76 @@
 ---
-title: Self-development
-description: How Obsilo extends its own capabilities at runtime through five tiers of increasing autonomy.
+title: 自我开发
+description: Obsilo 如何通过五个递增自主级别的运行时扩展自身能力。
 ---
 
-# Self-development
+# 自我开发
 
-Most agents ship with a fixed set of tools. Obsilo can extend itself at runtime: writing new instructions, creating new tools, and in the most advanced tier, modifying its own source code.
+大多数智能体都附带一套固定的工具。Obsilo 可以在运行时扩展自身：编写新的指令、创建新的工具，以及在最高级别修改自身的源代码。
 
-This is powerful and risky. The system has clear boundaries between tiers. Each requires more trust than the last. Lower tiers are safe by default, higher tiers require explicit approval. No tier lets the agent do something you haven't agreed to.
+这既强大又有风险。系统在各层级之间有明确的边界。每一级都比前一级需要更多的信任。较低级别默认安全，较高级别需要明确的批准。没有任何级别允许智能体执行您尚未同意的操作。
 
-## Five tiers
+## 五个层级
 
-Tier 1: skill files. The agent writes Markdown files that contain instructions for itself. These are cheat sheets: "when the user asks for X, here's how to approach it." Skill files live in the vault and are loaded into the system prompt when relevant. Zero risk, since the agent is just writing notes. A skill file might say "when creating meeting notes, always include an action items section and tag attendees." The agent reads this on next conversation start and follows the instructions.
+**第一级：技能文件。** 智能体编写包含自我指令的 Markdown 文件。这些是速查表："当用户要求 X 时，这里是处理方法。" 技能文件存储在 vault 中，并在相关时加载到系统提示中。零风险，因为智能体只是在写笔记。技能文件可能会说"创建会议笔记时，始终包含行动事项部分并标记参与者。" 智能体在下次对话开始时读取此内容并遵循指令。
 
-Tier 2: dynamic tools. The agent writes JavaScript code that runs in a sandboxed environment. Unlike skill files (which are instructions), dynamic tools are executable. The agent defines input parameters, writes the implementation, and registers the tool. Other conversations can then use it. The agent can create tools for tasks that come up repeatedly but aren't covered by built-in tools. If you frequently convert CSV data into a specific Markdown table format, the agent can write a dynamic tool for that transformation and reuse it.
+**第二级：动态工具。** 智能体编写在沙箱环境中运行的 JavaScript 代码。与技能文件（指令）不同，动态工具是可执行的。智能体定义输入参数、编写实现并注册工具。其他对话可以随后使用它。智能体可以为反复出现但内置工具未覆盖的任务创建工具。如果您经常将 CSV 数据转换为特定的 Markdown 表格格式，智能体可以为此转换编写动态工具并重复使用。
 
-Tier 3: source modification. The agent can read and modify its own TypeScript source code through the `EmbeddedSourceManager` (`src/core/self-development/EmbeddedSourceManager.ts`). At build time, an esbuild plugin encodes the entire source tree as base64 and embeds it into `main.js` as a constant. At runtime, the agent can decode it, search through files, make changes, and rebuild the plugin via `PluginBuilder` (`src/core/self-development/PluginBuilder.ts`) and `PluginReloader` (`src/core/self-development/PluginReloader.ts`). Every modification is validated with AST parsing (no syntax errors allowed) and the original source is backed up before changes are applied. This tier exists for advanced self-improvement scenarios and requires explicit user approval.
+**第三级：源代码修改。** 智能体可以通过 `EmbeddedSourceManager`（`src/core/self-development/EmbeddedSourceManager.ts`）读取和修改自身的 TypeScript 源代码。在构建时，esbuild 插件将整个源树编码为 base64 并将其作为常量嵌入到 `main.js` 中。在运行时，智能体可以解码它、搜索文件、进行更改，并通过 `PluginBuilder`（`src/core/self-development/PluginBuilder.ts`）和 `PluginReloader`（`src/core/self-development/PluginReloader.ts`）重新构建插件。每项修改都经过 AST 解析验证（不允许语法错误），并在应用更改之前备份原始源代码。此级别适用于高级自我改进场景，需要用户明确批准。
 
-Tier 4: reserved. Intentionally left empty for future capabilities.
+**第四级：保留。** 有意留空以备将来功能。
 
-Tier 5: proactive improvement. The agent observes usage patterns across conversations and suggests new skills or tools without being asked. If it notices you regularly perform a sequence of steps that could be automated, it proposes a skill file or dynamic tool to handle it. You approve or reject the suggestion. The agent never acts on its own at this tier. It only proposes.
+**第五级：主动改进。** 智能体观察跨对话的使用模式，并在未被询问时建议新的技能或工具。如果它注意到您经常执行可以自动化的步骤序列，它会提议创建技能文件或动态工具来处理它。您批准或拒绝该提议。智能体在此级别不会自行行动，只会提议。
 
-## Sandbox isolation
+## 沙箱隔离
 
-Dynamic tools (tier 2) run in a sandbox, not in the plugin's main process. The isolation strategy depends on the platform.
+动态工具（第二级）在沙箱中运行，而不是在插件的主进程中。隔离策略取决于平台。
 
-Desktop (Electron): `ProcessSandboxExecutor` (`src/core/sandbox/ProcessSandboxExecutor.ts`) spawns a separate Node.js child process with a 128 MB heap limit. The sandbox communicates with the main plugin through a message bridge. If the sandboxed code crashes or exceeds memory, the child process is killed and respawned (up to 3 times). After three failed respawns, the executor returns an error to the calling tool. The heap limit prevents a runaway script from consuming all system memory.
+**桌面（Electron）：** `ProcessSandboxExecutor`（`src/core/sandbox/ProcessSandboxExecutor.ts`）生成一个独立的 Node.js 子进程，堆内存限制为 128 MB。沙箱通过消息桥与主插件通信。如果沙箱中的代码崩溃或超过内存限制，子进程会被终止并重新生成（最多 3 次）。三次重新生成失败后，执行器向调用工具返回错误。堆内存限制防止失控脚本耗尽系统内存。
 
-Mobile: `IframeSandboxExecutor` (`src/core/sandbox/IframeSandboxExecutor.ts`) creates a hidden iframe with restricted permissions. Communication happens via `postMessage`. Mobile sandboxes have tighter constraints: no filesystem access, no native modules. The iframe approach works on both iOS and Android versions of Obsidian.
+**移动端：** `IframeSandboxExecutor`（`src/core/sandbox/IframeSandboxExecutor.ts`）创建一个具有受限权限的隐藏 iframe。通信通过 `postMessage` 进行。移动端沙箱有更严格的限制：无文件系统访问、无原生模块。iframe 方法适用于 Obsidian 的 iOS 和 Android 版本。
 
-Platform selection happens automatically in `createSandboxExecutor.ts`, which checks whether Electron is available and picks the right executor.
+平台选择自动发生在 `createSandboxExecutor.ts` 中，该文件检查 Electron 是否可用并选择正确的执行器。
 
-Both executors implement the same `ISandboxExecutor` interface, so dynamic tools don't need to care which platform they're running on.
+两个执行器都实现相同的 `ISandboxExecutor` 接口，因此动态工具无需关心它们运行在哪个平台上。
 
-The sandbox can do text processing, JSON manipulation, vault batch operations via the bridge, and HTTP requests via the bridge. It cannot do binary file generation (DOCX, PPTX, XLSX) because those require Buffer/stream/JSZip which aren't available in the sandboxed environment. Binary formats are handled by built-in tools in the plugin's main process.
+沙箱可以执行文本处理、JSON 操作、通过桥接进行 vault 批量操作，以及通过桥接发送 HTTP 请求。它无法生成二进制文件（DOCX、PPTX、XLSX），因为这些需要 Buffer/stream/JSZip，而这些在沙箱环境中不可用。二进制格式由插件主进程中的内置工具处理。
 
-## What the sandbox bridge exposes
+## 沙箱桥接暴露的内容
 
-Sandboxed code can't access the Obsidian API directly. Instead, it gets a `SandboxBridge` object with controlled methods:
+沙箱代码无法直接访问 Obsidian API。相反，它获得一个具有受控方法的 `SandboxBridge` 对象：
 
-- Read and write vault files
-- Search the vault
-- Make HTTP requests (routed through Obsidian's `requestUrl`)
-- Import ESM modules from CDN (via esm.sh with jsdelivr fallback)
+- 读取和写入 vault 文件
+- 搜索 vault
+- 发送 HTTP 请求（通过 Obsidian 的 `requestUrl` 路由）
+- 从 CDN 导入 ESM 模块（通过 esm.sh，jsdelivr 作为后备）
 
-The bridge is the security boundary. Everything the sandbox does goes through it, and the bridge enforces path validation and rate limits.
+桥接是安全边界。沙箱执行的所有操作都通过它，桥接执行路径验证和速率限制。
 
-CDN imports use esm.sh with the `?bundle` flag as the preferred source, falling back to jsdelivr. Transitive imports are resolved recursively. If you import a library that imports another library, both get downloaded and bundled. This allows substantial npm packages in sandbox code without pre-installing them.
+CDN 导入使用 esm.sh 配合 `?bundle` 标志作为首选源，后备至 jsdelivr。传递性导入被递归解析。如果您导入一个库，而该库又导入另一个库，两者都会被下载和打包。这允许在沙箱代码中使用大量 npm 包，而无需预先安装它们。
 
-## How tiers interact
+## 层级如何相互作用
 
-Tier 1 and tier 2 feed into each other naturally. The agent might start by writing a skill file (tier 1) that describes a workflow. After using it several times, it might notice that part of the workflow could be automated with code, and propose a dynamic tool (tier 2) to handle that part. The skill file then references the dynamic tool instead of describing the manual steps.
+第一级和第二级自然地相互促进。智能体可能首先编写一个技能文件（第一级）来描述工作流程。在使用几次后，它可能注意到工作流程的某部分可以代码自动化，并提议一个动态工具（第二级）来处理该部分。然后技能文件引用动态工具而不是描述手动步骤。
 
-Tier 5 (proactive improvement) draws on the memory system's pattern detection. When the `patterns` table in MemoryDB shows a recurring tool sequence with high success rates, tier 5 can propose turning it into a skill or dynamic tool. This closes the loop: usage patterns become automation proposals.
+第五级（主动改进）利用记忆系统的模式检测。当 MemoryDB 中的 `patterns` 表显示具有高成功率的反复出现的工具序列时，第五级可以提议将其转化为技能或动态工具。这形成了一个闭环：使用模式变成自动化提案。
 
-## Embedded source: how tier 3 works in detail
+## 嵌入式源代码：第三级详细工作原理
 
-The `EmbeddedSourceManager` maintains an in-memory Map of file paths to source content. On plugin load, it checks for the `EMBEDDED_SOURCE` constant (injected at build time). If present, it decodes each file from base64 and populates the map. The agent can then:
+`EmbeddedSourceManager` 维护一个文件路径到源代码内容的内存映射。在插件加载时，它检查 `EMBEDDED_SOURCE` 常量（在构建时注入）。如果存在，它将每个文件从 base64 解码并填充映射。然后智能体可以：
 
-- List all source files
-- Read any file's content
-- Search across files by regex
-- Modify a file's content in memory
+- 列出所有源文件
+- 读取任何文件的内容
+- 通过正则表达式搜索文件
+- 在内存中修改文件内容
 
-Modifications stay in memory until the agent triggers a rebuild. The `PluginBuilder` compiles the modified source into a new `main.js`, and the `PluginReloader` swaps the running plugin with the new build. The entire cycle (modify, build, reload) takes a few seconds on a typical machine.
+修改保存在内存中，直到智能体触发重新构建。`PluginBuilder` 将修改后的源代码编译成新的 `main.js`，`PluginReloader` 用新构建替换运行的插件。整个周期（修改、构建、重新加载）在典型机器上需要几秒钟。
 
-If the rebuild fails (compilation error, validation failure), the original source is restored from backup and the plugin continues running with its previous code. The agent is told what went wrong so it can attempt a fix.
+如果重新构建失败（编译错误、验证失败），则从备份恢复原始源代码，插件继续运行其之前的代码。智能体会被告知哪里出了问题，以便它可以尝试修复。
 
-## Honest limitations
+## 诚实的局限性
 
-Self-modification is useful in practice, but the limits are real. Tier 3 (source modification) is experimental. AST validation catches syntax errors but not logic errors. A self-modification that introduces a subtle bug may not surface until something breaks. The backup-and-restore mechanism helps, but it doesn't replace reviewing changes.
+自我修改在实践中很有用，但限制是真实的。第三级（源代码修改）是实验性的。AST 验证捕获语法错误但不捕获逻辑错误。引入细微错误的自我修改可能直到出现问题才会显现。备份和恢复机制有所帮助，但它不能替代审查更改。
 
-Tier 5 (proactive suggestions) is conservative by design, with a high threshold before suggesting anything. Most users will use tier 1 and tier 2 regularly. Tiers 3 and 5 are for power users who want to push the boundaries.
+第五级（主动建议）设计上是保守的，在建议任何内容之前有很高的门槛。大多数用户会定期使用第一级和第二级。第三级和第五级适用于想要突破界限的高级用户。
 
-Dynamic tools (tier 2) are the sweet spot for most use cases. They offer real programmability without the risks of source modification, and the sandbox isolation means a buggy tool can't crash the plugin. If you're exploring self-development capabilities, start with tier 1 skill files and graduate to tier 2 when you need actual code execution.
+动态工具（第二级）是大多数用例的甜蜜点。它们提供真正的可编程性，同时没有源代码修改的风险，沙箱隔离意味着有缺陷的工具不会导致插件崩溃。如果您正在探索自我开发能力，请从第一级技能文件开始，在需要实际代码执行时再升级到第二级。

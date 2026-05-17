@@ -1,133 +1,133 @@
 ---
-title: Skills, Rules & Workflows
-description: Create custom behaviors, constraints, and automated task sequences.
+title: 技能、规则与工作流
+description: 创建自定义行为、约束条件和自动化任务序列。
 ---
 
-# Skills, rules & workflows
+# 技能、规则与工作流
 
-Obsilo's behavior is fully customizable. You can give it permanent instructions, teach it new abilities, and create reusable multi-step sequences, all without writing code.
+Obsilo 的行为完全可自定义。您可以为它设置永久指令、教授新技能，并创建可复用的多步骤序列，全程无需编写代码。
 
-## The four building blocks
+## 四个构建模块
 
-| Type | What it does | Triggered by | Location |
-|------|-------------|-------------|----------|
-| Rules | Static instructions always injected into the system prompt | Always active (toggle on/off) | `.obsidian-agent/rules/*.md` |
-| Skills | Instruction sets injected when relevant keywords are detected | Automatic keyword matching | `.obsidian-agent/skills/{name}/SKILL.md` |
-| Workflows | Multi-step sequences triggered by slash commands | `/workflow-name` in chat | `.obsidian-agent/workflows/*.md` |
-| Custom Prompts | Reusable templates with variables | `/` picker in chat | Settings > Custom Prompts |
+| 类型 | 功能 | 触发方式 | 位置 |
+|------|------|----------|------|
+| 规则 | 静态指令，始终注入到系统提示词中 | 始终启用（可开关） | `.obsidian-agent/rules/*.md` |
+| 技能 | 当检测到相关关键词时注入的指令集 | 自动关键词匹配 | `.obsidian-agent/skills/{name}/SKILL.md` |
+| 工作流 | 通过斜杠命令触发的多步骤序列 | 在聊天中输入 `/workflow-name` | `.obsidian-agent/workflows/*.md` |
+| 自定义提示词 | 带变量的可复用模板 | 在聊天中通过 `/` 选择器调用 | 设置 > 自定义提示词 |
 
-## Rules
+## 规则
 
-Rules are the simplest customization. A rule is a Markdown file that gets injected into every conversation.
+规则是最简单的自定义方式。规则是一个 Markdown 文件，会被注入到每个会话中。
 
-To create one:
-1. Navigate to `.obsidian-agent/rules/` in your vault
-2. Create a new `.md` file (e.g., `tone.md`)
-3. Write your instruction in plain text
+创建方法：
+1. 在仓库中导航到 `.obsidian-agent/rules/`
+2. 创建一个新的 `.md` 文件（例如 `tone.md`）
+3. 用纯文本编写您的指令
 
 ```markdown
-Always respond in a friendly, concise tone.
-Never use bullet points -- use numbered lists instead.
-When summarizing notes, always include the creation date.
+始终以友好、简洁的语气回复。
+不要使用项目符号列表 —— 改用编号列表。
+在总结笔记时，始终包含创建日期。
 ```
 
-Toggle rules on and off in **Settings > Obsilo Agent > Rules**. Disabled rules stay in the folder but are not injected.
+在 **设置 > Obsilo Agent > 规则** 中开关规则。禁用的规则保留在文件夹中，但不会被注入。
 
-:::tip When to use rules
-Rules work best for global constraints that should always apply: tone of voice, formatting preferences, language requirements, domain-specific terminology.
+:::tip 何时使用规则
+规则最适合用于应始终应用的全局约束：语气、格式偏好、语言要求、特定领域术语。
 :::
 
-## Skills
+## 技能
 
-Skills are more powerful than rules. They are only injected when the agent detects that a conversation is relevant to the skill's domain, keeping the system prompt lean.
+技能比规则更强大。只有当智能体检测到对话与技能领域相关时才会注入，从而保持系统提示词的精简。
 
-To create one:
-1. Create a folder under `.obsidian-agent/skills/` (e.g., `meeting-notes/`)
-2. Add a `SKILL.md` file with frontmatter:
+创建方法：
+1. 在 `.obsidian-agent/skills/` 下创建一个文件夹（例如 `meeting-notes/`）
+2. 添加一个带有 frontmatter 的 `SKILL.md` 文件：
 
 ```markdown
 ---
-name: Meeting Notes
-description: Formats meeting notes with attendees, decisions, and action items
+name: 会议笔记
+description: 将会议笔记格式化为包含参会人员、决策和行动项的格式
 ---
 
-When the user asks you to create or format meeting notes:
-1. Ask for the meeting title, date, and attendees if not provided
-2. Structure the note with these sections: Attendees, Agenda, Discussion, Decisions, Action Items
-3. Tag action items with the responsible person
-4. Add frontmatter with type: meeting, date, and participants
+当用户要求创建或格式化会议笔记时：
+1. 如果未提供，请询问会议标题、日期和参会人员
+2. 使用以下部分组织笔记：参会人员、议程、讨论、决策、行动项
+3. 为行动项标记负责人
+4. 添加 frontmatter，包含 type: meeting、日期和参与者
 ```
 
-The agent automatically matches this skill when the user mentions meetings, agendas, or action items.
+智能体会自动匹配用户提及的会议、议程或行动项时激活此技能。
 
-### Per-mode filtering
+### 按模式过滤
 
-Skills can be restricted to specific modes. A skill meant for Agent mode (writing) won't activate in Ask mode (read-only), preventing write-action suggestions when the agent cannot execute them.
+技能可以限制在特定模式下使用。专为 Agent 模式（写作）设计的技能不会在 Ask 模式（只读）下激活，从而避免在智能体无法执行操作时给出写作建议。
 
-### Plugin integration
+### 插件集成
 
-Obsilo automatically discovers your installed Obsidian plugins and can use them. This happens through three mechanisms:
+Obsilo 会自动发现您安装的 Obsidian 插件并可以使用它们。这通过三种机制实现：
 
-Plugin skills (automatic). On startup, Obsilo scans all installed plugins and generates skill files that describe their capabilities. If you have Dataview installed, the agent knows it can run Dataview queries. If you have Templater, it knows about your templates. You can see these in **Settings > Skills > Plugin Skills** and toggle them on or off per plugin.
+**插件技能（自动）**。启动时，Obsilo 扫描所有已安装的插件并生成描述其功能的技能文件。如果您安装了 Dataview，智能体就知道可以运行 Dataview 查询。如果您安装了 Templater，它就知道您的模板。在 **设置 > 技能 > 插件技能** 中可以查看这些技能，并按插件开关。
 
-Plugin commands. The agent can run any Obsidian command through the `execute_command` tool. This includes commands from your plugins, like "Dataview: Refresh all views" or "Templater: Insert template". Commands require approval by default (configurable under Settings > Auto-Approve > Plugin Skills).
+**插件命令**。智能体可以通过 `execute_command` 工具运行任何 Obsidian 命令。这包括来自插件的命令，如"Dataview：刷新所有视图"或"Templater：插入模板"。默认情况下命令需要审批（可在设置 > 自动审批 > 插件技能下配置）。
 
-Plugin API. For deeper integration, the agent can read data from plugin APIs using `call_plugin_api`. It can query Dataview results or read Omnisearch indexes. Write access to plugin APIs is off by default and requires explicit opt-in under Settings > Auto-Approve > Plugin API Writes.
+**插件 API**。为了更深入的集成，智能体可以使用 `call_plugin_api` 读取插件 API 数据。它可以查询 Dataview 结果或读取 Omnisearch 索引。默认关闭插件 API 的写入权限，需要在设置 > 自动审批 > 插件 API 写入下明确启用。
 
-:::tip Rescan after installing plugins
-If you install a new plugin while Obsidian is running, go to **Settings > Skills** and click **"Rescan vault"** to pick up the new plugin. Otherwise it gets discovered on next restart.
+:::tip 安装插件后重新扫描
+如果在 Obsidian 运行期间安装了新插件，请前往 **设置 > 技能** 并点击 **"重新扫描仓库"** 以获取新插件。否则将在下次重启时发现。
 :::
 
-You can also create your own skills that build on plugin capabilities. A "Project Dashboard" skill could use Dataview queries to generate a summary canvas, for example.
+您也可以创建基于插件功能构建的自己的技能。例如，一个"项目仪表盘"技能可以使用 Dataview 查询来生成摘要画布。
 
-## Workflows
+## 工作流
 
-Workflows are saved procedures. They define a sequence of steps the agent follows when triggered.
+工作流是保存的流程。它定义了在触发时智能体遵循的一系列步骤。
 
-To create one:
-1. Create a file in `.obsidian-agent/workflows/` (e.g., `weekly-review.md`)
-2. Define the steps:
+创建方法：
+1. 在 `.obsidian-agent/workflows/` 中创建一个文件（例如 `weekly-review.md`）
+2. 定义步骤：
 
 ```markdown
-# Weekly Review
+# 周回顾
 
-1. Search for all notes created or modified in the last 7 days
-2. Group them by folder and summarize each group
-3. List any open action items (unchecked checkboxes)
-4. Create a new note called "Weekly Review - [date]" with the summary
-5. Move the note to the Reviews/ folder
+1. 搜索过去 7 天内创建或修改的所有笔记
+2. 按文件夹分组并总结每个组
+3. 列出所有未完成的动作项（未勾选的复选框）
+4. 创建一个名为"周回顾 - [日期]"的新笔记，包含摘要
+5. 将笔记移动到 Reviews/ 文件夹
 ```
 
-Trigger it by typing `/weekly-review` in the chat input. The agent follows the steps in order.
+在聊天输入框中输入 `/weekly-review` 来触发。智能体会按顺序执行步骤。
 
-## Custom prompts
+## 自定义提示词
 
-Custom prompts are reusable message templates with variable placeholders.
+自定义提示词是带变量占位符的可复用消息模板。
 
-| Variable | Replaced with |
-|----------|--------------|
-| `{{userInput}}` | Whatever the user types after selecting the prompt |
-| `{{activeFile}}` | The content of the currently open note |
+| 变量 | 替换为 |
+|------|--------|
+| `{{userInput}}` | 用户选择提示词后输入的内容 |
+| `{{activeFile}}` | 当前打开笔记的内容 |
 
-Example: a prompt called "Explain Like I'm 5" with the template `Explain the following in simple terms a beginner would understand: {{activeFile}}`.
+示例：一个名为"像解释给我听"的提示词，模板为`用初学者能理解的简单术语解释以下内容：{{activeFile}}`。
 
-Create and manage custom prompts in **Settings > Obsilo Agent > Custom Prompts**, or type `/` in the chat to browse and trigger them.
+在 **设置 > Obsilo Agent > 自定义提示词** 中创建和管理自定义提示词，或在聊天中输入 `/` 浏览和触发它们。
 
-## Choosing the right tool
+## 选择合适的工具
 
-| You want to... | Use |
-|----------------|-----|
-| Set a permanent formatting or tone rule | Rule |
-| Teach the agent a domain-specific process | Skill |
-| Create a repeatable multi-step procedure | Workflow |
-| Save a frequently used prompt | Custom Prompt |
+| 您想... | 使用 |
+|---------|------|
+| 设置永久的格式或语气规则 | 规则 |
+| 教授智能体特定领域的流程 | 技能 |
+| 创建可重复的多步骤程序 | 工作流 |
+| 保存常用提示词 | 自定义提示词 |
 
-:::warning Keep rules focused
-Too many rules bloat the system prompt and can confuse the model. Prefer skills for specialized knowledge; they only activate when needed.
+:::warning 保持规则精简
+过多规则会使系统提示词膨胀，可能让模型困惑。对于专门知识，优先使用技能；它们只在需要时激活。
 :::
 
-## Next steps
+## 下一步
 
-- [Office Documents](/guides/office-documents): Create presentations, documents, and spreadsheets
-- [Connectors](/guides/connectors): Connect external tools and expose your vault
-- [Multi-Agent & Tasks](/guides/multi-agent): Delegate work to sub-agents
+- [办公文档](/guides/office-documents)：创建演示文稿、文档和电子表格
+- [连接器](/guides/connectors)：连接外部工具并公开您的仓库
+- [多智能体与任务](/guides/multi-agent)：将工作委托给子智能体

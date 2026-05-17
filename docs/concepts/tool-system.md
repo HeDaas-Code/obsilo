@@ -1,17 +1,17 @@
 ---
-title: Tool System
-description: How tools work, how they're registered and grouped, and what happens when the LLM calls one.
+title: 工具系统
+description: 工具如何工作、如何注册和分组，以及当大语言模型调用工具时会发生什么。
 ---
 
-# Tool system
+# 工具系统
 
-A tool is a function the LLM can call. Each tool has a name, a description, a JSON schema for its inputs, and an `execute` method. That is the entire abstraction.
+工具是大语言模型可以调用的函数。每个工具都有名称、描述、输入的 JSON schema 和一个 `execute` 方法。这就是全部的抽象。
 
-The model never touches the vault directly. It describes _what_ it wants to do by emitting a tool call, and the tool system decides whether and how to carry it out.
+模型从不直接接触保险库。它通过发出工具调用来描述想要做什么，由工具系统决定是否执行以及如何执行。
 
 ## BaseTool
 
-Every tool extends `BaseTool` (`src/core/tools/BaseTool.ts`):
+每个工具都继承自 `BaseTool`（`src/core/tools/BaseTool.ts`）：
 
 ```typescript
 abstract class BaseTool<TName extends ToolName = ToolName> {
@@ -21,76 +21,76 @@ abstract class BaseTool<TName extends ToolName = ToolName> {
     abstract getDefinition(): ToolDefinition;
     abstract execute(input: Record<string, unknown>, context: ToolExecutionContext): Promise<void>;
 
-    protected validate(input: Record<string, unknown>): void { /* optional */ }
-    protected formatError(error: unknown): string { /* wraps in <error> tags */ }
+    protected validate(input: Record<string, unknown>): void { /* 可选 */ }
+    protected formatError(error: unknown): string { /* 用 <error> 标签包装 */ }
 }
 ```
 
-`isWriteOperation` is declared per tool, not inferred. The pipeline uses it to decide whether approval and checkpoints are needed. `getDefinition()` returns the JSON schema the LLM sees. `execute()` receives a `ToolExecutionContext` with callbacks for spawning subtasks, switching modes, signaling completion, and requesting approval.
+`isWriteOperation` 是每个工具自行声明的，而非推断出来的。管道使用它来决定是否需要审批和检查点。`getDefinition()` 返回大语言模型看到的 JSON schema。`execute()` 接收一个 `ToolExecutionContext`，其中包含用于生成分子任务、切换模式、发出完成信号和请求审批的回调函数。
 
 ## ToolRegistry
 
-`ToolRegistry` (`src/core/tools/ToolRegistry.ts`) is a `Map<ToolName, BaseTool>`. Its constructor takes the plugin instance and optional service references (MCP client, sandbox executor, skill loader) and registers all internal tools at startup.
+`ToolRegistry`（`src/core/tools/ToolRegistry.ts`）是一个 `Map<ToolName, BaseTool>`。其构造函数接收插件实例和可选的服务引用（MCP 客户端、沙箱执行器、技能加载器），并在启动时注册所有内部工具。
 
-The registry has one job beyond storage: `getToolDefinitions(mode)` filters tools by the active mode's `toolGroups` setting. A mode that only enables the `read` group won't expose write tools to the LLM. The model cannot call what it cannot see.
+注册表除了存储外还有一个职责：`getToolDefinitions(mode)` 根据活动模式的 `toolGroups` 设置过滤工具。只启用 `read` 组的模式不会向大语言模型暴露写操作工具。模型无法调用它看不到的东西。
 
-## Tool groups
+## 工具组
 
-Tools are organized into six groups. Each group maps to a permission category.
+工具被组织成六个组。每个组对应一个权限类别。
 
-| Group | What it contains | Effect on vault |
+| 组 | 包含内容 | 对保险库的影响 |
 |-------|-----------------|-----------------|
-| `read` | read_file, read_document, list_files, search_files | Never changes anything |
-| `vault` | get_frontmatter, search_by_tag, get_vault_stats, semantic_search, query_base, ... | Read-only metadata and search |
-| `edit` | write_file, edit_file, delete_file, move_file, create_pptx, generate_canvas, ... | Modifies or creates files |
-| `web` | web_fetch, web_search | External network access |
-| `agent` | attempt_completion, switch_mode, new_task, evaluate_expression, manage_skill, ... | Controls the agent's own behavior |
-| `mcp` | use_mcp_tool | Calls external MCP servers |
-| `skill` | execute_command, call_plugin_api, execute_recipe, ... | Runs Obsidian commands and plugin APIs |
+| `read` | read_file、read_document、list_files、search_files | 永不更改任何内容 |
+| `vault` | get_frontmatter、search_by_tag、get_vault_stats、semantic_search、query_base、... | 只读元数据和搜索 |
+| `edit` | write_file、edit_file、delete_file、move_file、create_pptx、generate_canvas、... | 修改或创建文件 |
+| `web` | web_fetch、web_search | 外部网络访问 |
+| `agent` | attempt_completion、switch_mode、new_task、evaluate_expression、manage_skill、... | 控制代理自身行为 |
+| `mcp` | use_mcp_tool | 调用外部 MCP 服务器 |
+| `skill` | execute_command、call_plugin_api、execute_recipe、... | 运行 Obsidian 命令和插件 API |
 
-When you create a [custom mode](/concepts/mode-system), you pick which groups it gets. An "Ask" mode with only `read` and `vault` is physically unable to write files.
+当你创建[自定义模式](/concepts/mode-system)时，你可以选择它获得哪些组。只包含 `read` 和 `vault` 的"问答"模式在物理上无法写入文件。
 
-## Execution pipeline
+## 执行管道
 
-Every tool call flows through `ToolExecutionPipeline` (`src/core/tool-execution/ToolExecutionPipeline.ts`). Here is the path from invocation to result:
+每个工具调用都通过 `ToolExecutionPipeline`（`src/core/tool-execution/ToolExecutionPipeline.ts`）。以下是调用到结果的路径：
 
 ```mermaid
 flowchart LR
-    A[LLM emits tool call] --> B{Path blocked?}
-    B -- yes --> X1[Denied]
-    B -- no --> C{Approval needed?}
-    C -- yes, rejected --> X2[Denied]
-    C -- yes, approved --> D[Checkpoint + Execute]
-    C -- no --> D
-    D --> E[Log result]
+    A[LLM 发出工具调用] --> B{路径被阻止？}
+    B -- 是 --> X1[拒绝]
+    B -- 否 --> C{需要审批？}
+    C -- 是，被拒绝 --> X2[拒绝]
+    C -- 是，已批准 --> D[检查点 + 执行]
+    C -- 否 --> D
+    D --> E[记录结果]
 ```
 
-In detail:
+详细步骤：
 
-1. The tool must exist in the registry. Unknown tool names return an error.
-2. The `IgnoreService` checks whether any file path in the input is blocked or write-protected. If paths are blocked, the call is denied.
-3. Write operations, MCP calls, sandbox evaluations, and subtask spawning go through `checkApproval()`. If no approval callback exists, the operation is denied. Fail-closed by design.
-4. Before each write, a git snapshot captures the file's current content for undo.
-5. The tool runs. The result is logged to a JSONL audit file via `OperationLogger`.
+1. 工具必须存在于注册表中。未知工具名称会返回错误。
+2. `IgnoreService` 检查输入中的任何文件路径是否被阻止或写保护。如果路径被阻止，则调用被拒绝。
+3. 写操作、MCP 调用、沙箱评估和分子任务生成都会经过 `checkApproval()`。如果没有审批回调，操作被拒绝。默认设计为故障关闭。
+4. 每次写入前，git 快照会捕获文件的当前内容以供撤销。
+5. 工具运行。结果通过 `OperationLogger` 记录到 JSONL 审计文件。
 
-Read-only calls skip steps 3 and 4 entirely.
+只读调用完全跳过步骤 3 和 4。
 
-## Parallel execution
+## 并行执行
 
-When the model emits multiple tool calls in a single response, read-safe tools run concurrently via `Promise.all()`. Write tools and control-flow tools always run sequentially. A single iteration can resolve four `read_file` calls in parallel instead of waiting for each one.
+当模型在单个响应中发出多个工具调用时，读操作安全的工具通过 `Promise.all()` 并发运行。写操作工具和控制流工具始终顺序执行。单个迭代可以并行解析四个 `read_file` 调用，而不是等待每一个完成。
 
-The distinction is simple: if `isWriteOperation` is false and the tool is in the `PARALLEL_SAFE` set, it runs concurrently. Everything else queues.
+区别很简单：如果 `isWriteOperation` 为 false 且工具在 `PARALLEL_SAFE` 集中，它就并发运行。其他所有工具排队等待。
 
-## Dynamic tools
+## 动态工具
 
-Users and the agent can create tools at runtime. `DynamicToolFactory` (`src/core/tools/dynamic/`) builds a tool instance from a name, schema, and execute function. `DynamicToolLoader` persists definitions so they survive across sessions.
+用户和代理可以在运行时创建工具。`DynamicToolFactory`（`src/core/tools/dynamic/`）从名称、schema 和执行函数构建工具实例。`DynamicToolLoader` 持久化定义，以便它们在会话间保留。
 
-Dynamic tools go through the same `ToolExecutionPipeline` as built-in tools. A dynamic tool that writes files still needs approval and still gets checkpointed.
+动态工具与内置工具一样通过相同的 `ToolExecutionPipeline`。写入文件的动态工具仍然需要审批，并且仍然会获得检查点。
 
-## Tool repetition detection
+## 工具重复检测
 
-`ToolRepetitionDetector` (`src/core/tool-execution/ToolRepetitionDetector.ts`) catches the agent when it gets stuck calling the same tool with the same arguments in a loop.
+`ToolRepetitionDetector`（`src/core/tool-execution/ToolRepetitionDetector.ts`）在代理陷入使用相同参数重复调用同一工具的循环时捕获它。
 
-It maintains a sliding window of the last 15 calls. If an identical `tool:input` combination appears 3 or more times, the call is blocked with a recoverable error. For search tools, it also checks semantic similarity. Queries with a Jaccard overlap above 0.5 that appear 3+ times are blocked too.
+它维护一个滑动窗口，记录最近 15 次调用。如果相同的 `tool:input` 组合出现 3 次或更多次，调用将被阻止并返回可恢复的错误。对于搜索工具，它还检查语义相似度。Jaccard 重叠超过 0.5 且出现 3 次以上的查询也会被阻止。
 
-The error is recoverable on purpose. The agent sees the message and can try a different approach. The `consecutiveMistakeLimit` in `AgentTask` is the ultimate safety net if the agent keeps failing anyway.
+错误是有意设计为可恢复的。代理会看到消息，并可以尝试不同的方法。`AgentTask` 中的 `consecutiveMistakeLimit` 是最终的安全网，以防代理仍然持续失败。

@@ -1,13 +1,13 @@
 ---
 title: Provider Auth
-description: How Obsilo connects to 10+ AI providers through a single interface, with encrypted credential storage.
+description: Obsilo 如何通过单一接口连接 10+ AI 提供商，并进行加密凭证存储。
 ---
 
-# Provider auth
+# Provider 认证
 
-Obsilo supports Anthropic, OpenAI, GitHub Copilot, Kilo Gateway, Azure, OpenRouter, Ollama, LM Studio, and custom OpenAI-compatible endpoints. Each provider has different authentication requirements, but the agent talks to a single `ApiHandler` interface.
+Obsilo 支持 Anthropic、OpenAI、GitHub Copilot、Kilo Gateway、Azure、OpenRouter、Ollama、LM Studio 以及自定义 OpenAI 兼容端点。每个提供商都有不同的认证要求，但 Agent 通过一个单一的 `ApiHandler` 接口进行通信。
 
-## The factory
+## 工厂模式
 
 ```mermaid
 flowchart LR
@@ -19,62 +19,62 @@ flowchart LR
     P --> KG[KiloGatewayProvider]
 ```
 
-The `buildApiHandler` factory (`src/api/index.ts`) takes a provider configuration and returns the right implementation. Anthropic gets its own provider class. GitHub Copilot and Kilo Gateway each have dedicated classes because their auth flows are non-standard. Everything else (OpenAI, Azure, OpenRouter, Ollama, LM Studio, custom endpoints) goes through `OpenAiProvider`, since they all speak the OpenAI API format.
+`buildApiHandler` 工厂函数（`src/api/index.ts`）接收提供商配置并返回相应的实现类。Anthropic 有自己的 Provider 类。GitHub Copilot 和 Kilo Gateway 各自有专用类，因为它们的认证流程是非标准的。其他所有提供商（OpenAI、Azure、OpenRouter、Ollama、LM Studio、自定义端点）都通过 `OpenAiProvider` 处理，因为它们都使用 OpenAI API 格式。
 
-The factory uses an exhaustive switch. Add a new provider type to the union and TypeScript forces you to handle it.
+工厂使用穷举式 switch 语句。向联合类型添加新的提供商类型时，TypeScript 会强制你处理它。
 
-## Standard auth
+## 标准认证
 
-Most providers use API key authentication. You paste your key in settings, and every request includes it as a Bearer token. The OpenAI-compatible providers (Ollama, LM Studio, OpenRouter, Azure, custom) all work this way, with minor variations in base URL and header format.
+大多数提供商使用 API key 认证。你在设置中粘贴你的 key，每次请求都会将其作为 Bearer token 发送。OpenAI 兼容的提供商（Ollama、LM Studio、OpenRouter、Azure、自定义）都以此方式工作，base URL 和 header 格式略有差异。
 
-Ollama and LM Studio are local providers that run on your machine and don't need an API key at all. The `OpenAiProvider` handles this by making the key optional when the base URL points to localhost. All HTTP requests go through Obsidian's `requestUrl` API rather than native `fetch`, which keeps the plugin compliant with Obsidian's review requirements.
+Ollama 和 LM Studio 是本地提供商，运行在你的机器上，完全不需要 API key。`OpenAiProvider` 通过在 base URL 指向 localhost 时将 key 设置为可选来处理这种情况。所有 HTTP 请求都通过 Obsidian 的 `requestUrl` API 发送，而不是原生的 `fetch`，这样可以使插件符合 Obsidian 的审核要求。
 
-## GitHub Copilot: three-stage token chain
+## GitHub Copilot：三阶段 Token 链
 
-GitHub Copilot authentication requires a three-stage flow, handled by `GitHubCopilotAuthService` (`src/core/security/GitHubCopilotAuthService.ts`):
+GitHub Copilot 认证需要三阶段流程，由 `GitHubCopilotAuthService`（`src/core/security/GitHubCopilotAuthService.ts`）处理：
 
-1. Device code flow. The service requests a device code from GitHub, then shows you a URL and a short code. You open the URL in a browser, enter the code, and authorize the application. The service polls until authorization completes.
+1. 设备码流程。服务向 GitHub 请求设备码，然后向你显示一个 URL 和一个短码。你在浏览器中打开该 URL，输入验证码并授权应用程序。服务轮询直到授权完成。
 
-2. Access token. GitHub returns a long-lived access token (valid ~30 days), stored securely and used to obtain short-lived Copilot tokens.
+2. Access token。GitHub 返回一个长期有效的 access token（有效期约 30 天），安全存储并用于获取短期的 Copilot token。
 
-3. Copilot token. The access token is exchanged for a Copilot-specific token (valid ~1 hour) sent with each API request. On expiry, the service refreshes it automatically using the access token.
+3. Copilot token。Access token 被交换为 Copilot 专用 token（有效期约 1 小时），随每个 API 请求发送。过期时，服务使用 access token 自动刷新。
 
-The custom fetch wrapper (`getCopilotFetch()`) is injected into the OpenAI SDK for streaming chat completions because the SDK's built-in fetch doesn't handle Copilot's token format. The wrapper also handles token expiry: if a request fails with a 401, it triggers a refresh and retries.
+自定义 fetch 包装器（`getCopilotFetch()`）被注入到 OpenAI SDK 中用于流式聊天补全，因为 SDK 内置的 fetch 无法处理 Copilot 的 token 格式。该包装器还处理 token 过期：如果请求因 401 失败，它会触发刷新并重试。
 
-You can provide a custom GitHub OAuth client ID in settings for enterprise GitHub instances. The default client ID targets github.com.
+你可以在设置中为 enterprise GitHub 实例提供自定义 GitHub OAuth client ID。默认的 client ID 针对 github.com。
 
-## Kilo Gateway: device auth + manual token
+## Kilo Gateway：设备认证 + 手动 Token
 
-The `KiloAuthService` (`src/core/security/KiloAuthService.ts`) supports two auth modes. The device authorization flow works like GitHub Copilot: you get a code, authorize in a browser, and the service polls until complete. Alternatively, you paste an API token directly for simpler setups.
+`KiloAuthService`（`src/core/security/KiloAuthService.ts`）支持两种认证模式。设备授权流程与 GitHub Copilot 类似：你获取一个码，在浏览器中授权，服务轮询直到完成。或者，你可以直接粘贴 API token 以简化设置。
 
-Both modes produce the same session state. The service stores user profile information and provider defaults (available models, rate limits) retrieved from the gateway API at `https://api.kilo.ai/api`.
+两种模式产生相同的会话状态。服务存储用户profile信息和提供商默认值（可用模型、速率限制），这些信息从网关 API `https://api.kilo.ai/api` 检索。
 
-## Encrypted storage
+## 加密存储
 
-On desktop, the `SafeStorageService` (`src/core/security/SafeStorageService.ts`) uses Electron's `safeStorage` API to encrypt credentials before storing them. This uses the operating system's keychain (Keychain on macOS, Credential Manager on Windows, libsecret on Linux).
+在桌面端，`SafeStorageService`（`src/core/security/SafeStorageService.ts`）使用 Electron 的 `safeStorage` API 对凭证进行加密后再存储。这使用操作系统的密钥链（macOS 上的 Keychain、Windows 上的 Credential Manager、Linux 上的 libsecret）。
 
-The service loads Electron via dynamic `require('electron')`, one of the few places where `require()` is allowed instead of ES imports, because Electron can only be loaded dynamically in the renderer process.
+该服务通过动态 `require('electron')` 加载 Electron，这是少数允许使用 `require()` 而不是 ES 导入的地方之一，因为 Electron 只能在渲染进程中动态加载。
 
-On mobile, Electron isn't available. Credentials fall back to Obsidian's standard plugin data storage. This is less secure than OS-level encryption, but mobile Obsidian doesn't expose a keychain API.
+在移动端，Electron 不可用。凭证回退到 Obsidian 标准插件数据存储。这不如 OS 级加密安全，但移动版 Obsidian 没有暴露密钥链 API。
 
-## Concurrency
+## 并发控制
 
-Both the Copilot and Kilo auth services include concurrency guards. If multiple requests trigger a token refresh simultaneously, only one refresh runs. The others wait for the same promise. This prevents duplicate auth requests and race conditions during high-frequency API usage.
+Copilot 和 Kilo 认证服务都包含并发保护。如果多个请求同时触发 token 刷新，只有一次刷新会执行。其他请求等待同一个 promise。这可以防止重复认证请求和高频 API 使用期间的竞态条件。
 
-## Adding a new provider
+## 添加新的提供商
 
-To add a provider that speaks the OpenAI API format: add the type to the `LLMProvider` union in `src/types/settings.ts`, handle it in the factory switch (it'll route to `OpenAiProvider`), and add a settings UI entry. If the provider needs a custom auth flow, create a dedicated provider class and auth service.
+要添加使用 OpenAI API 格式的提供商：将类型添加到 `src/types/settings.ts` 的 `LLMProvider` 联合类型中，在工厂 switch 中处理它（它会路由到 `OpenAiProvider`），并添加设置 UI 条目。如果提供商需要自定义认证流程，请创建专用 Provider 类和认证服务。
 
-The relevant source files:
+相关源文件：
 
-| File | What it does |
-|------|-------------|
-| `src/api/index.ts` | Factory function, provider routing |
-| `src/api/types.ts` | `ApiHandler` interface, stream types |
-| `src/api/providers/anthropic.ts` | Anthropic SDK integration |
-| `src/api/providers/openai.ts` | OpenAI-compatible provider (handles 6+ providers) |
-| `src/api/providers/github-copilot.ts` | Copilot provider with custom fetch |
-| `src/api/providers/kilo-gateway.ts` | Kilo Gateway with device auth |
-| `src/core/security/SafeStorageService.ts` | Electron keychain encryption |
-| `src/core/security/GitHubCopilotAuthService.ts` | Three-stage Copilot auth |
-| `src/core/security/KiloAuthService.ts` | Kilo device auth + manual token |
+| 文件 | 功能 |
+|------|------|
+| `src/api/index.ts` | 工厂函数，提供商路由 |
+| `src/api/types.ts` | `ApiHandler` 接口，流类型 |
+| `src/api/providers/anthropic.ts` | Anthropic SDK 集成 |
+| `src/api/providers/openai.ts` | OpenAI 兼容提供商（处理 6+ 提供商） |
+| `src/api/providers/github-copilot.ts` | 带自定义 fetch 的 Copilot 提供商 |
+| `src/api/providers/kilo-gateway.ts` | 带设备认证的 Kilo Gateway |
+| `src/core/security/SafeStorageService.ts` | Electron 密钥链加密 |
+| `src/core/security/GitHubCopilotAuthService.ts` | 三阶段 Copilot 认证 |
+| `src/core/security/KiloAuthService.ts` | Kilo 设备认证 + 手动 Token |

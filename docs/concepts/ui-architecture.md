@@ -1,79 +1,79 @@
 ---
-title: UI Architecture
-description: How Obsilo's interface works within Obsidian's constraints, without React or innerHTML.
+title: UI 架构
+description: Obsilo 的界面如何在 Obsidian 的限制下工作，不使用 React 或 innerHTML
 ---
 
-# UI architecture
+# UI 架构
 
-Obsidian plugins can't use React, Vue, or any framework that relies on `innerHTML`. The Community Plugin review bot rejects plugins that set `innerHTML` directly. Everything in Obsilo's UI uses Obsidian's DOM API: `createEl`, `createDiv`, `createSpan`, `appendText`. More verbose than JSX, but it's what the platform requires.
+Obsidian 插件不能使用 React、Vue 或任何依赖 `innerHTML` 的框架。社区插件审核机器人会拒绝直接设置 `innerHTML` 的插件。Obsilo UI 中的所有内容都使用 Obsidian 的 DOM API：`createEl`、`createDiv`、`createSpan`、`appendText`。比 JSX 更冗长，但这是平台的要求。
 
-## Two main components
+## 两个主要组件
 
 ```mermaid
 flowchart TD
     O[Obsilo UI] --> S[AgentSidebarView]
     O --> T[AgentSettingsTab]
-    S --> Chat[Chat interface]
-    S --> Ext[Extracted components]
-    T --> Tabs[5 main tabs, 19 sub-tabs]
+    S --> Chat[聊天界面]
+    S --> Ext[提取的组件]
+    T --> Tabs[5 个主标签页，19 个子标签页]
 ```
 
-`AgentSidebarView` (`src/ui/AgentSidebarView.ts`) is the chat interface. It extends Obsidian's `ItemView` and renders in a sidebar leaf. You type messages, see responses, attach files, and watch the agent work here. The view manages the `AgentTask` lifecycle: creating tasks, sending messages, handling streaming responses, and displaying tool execution results. It also handles the mode selector, model selector, context badge display, and stop/send controls.
+`AgentSidebarView`（`src/ui/AgentSidebarView.ts`）是聊天界面。它扩展了 Obsidian 的 `ItemView` 并在侧边栏中渲染。您在此输入消息、查看回复、附加文件并观察 agent 工作。该视图管理 `AgentTask` 的生命周期：创建任务、发送消息、处理流式响应以及显示工具执行结果。它还处理模式选择器、模型选择器、上下文徽章显示以及停止/发送控制。
 
-`AgentSettingsTab` (`src/ui/AgentSettingsTab.ts`) is the settings interface. It extends `PluginSettingTab` and organizes configuration across 5 main tabs, each with sub-tabs:
+`AgentSettingsTab`（`src/ui/AgentSettingsTab.ts`）是设置界面。它扩展了 `PluginSettingTab` 并将配置组织在 5 个主标签页中，每个标签页下有子标签页：
 
-| Main tab | Sub-tabs |
+| 主标签页 | 子标签页 |
 |----------|----------|
-| Providers | Models, Embeddings, Web Search, MCP Servers |
-| Agent Behaviour | Modes, Permissions, Loop, Memory, Rules, Workflows, Skills, Prompts |
-| Vault | (single tab) |
-| Advanced | Interface, Shell, Visual Intelligence, Log, Debug, Backup |
-| Language | (single tab) |
+| Providers | Models、Embeddings、Web Search、MCP Servers |
+| Agent Behaviour | Modes、Permissions、Loop、Memory、Rules、Workflows、Skills、Prompts |
+| Vault | （单个标签页） |
+| Advanced | Interface、Shell、Visual Intelligence、Log、Debug、Backup |
+| Language | （单个标签页） |
 
-Each sub-tab is its own class in `src/ui/settings/`. The settings tab builds a navigation bar and delegates rendering to the active sub-tab class. This keeps the 1,500+ lines of settings UI manageable.
+每个子标签页都是 `src/ui/settings/` 中的独立类。设置标签页构建导航栏并将渲染工作委托给活动的子标签页类。这使得 1500 多行的设置 UI 易于管理。
 
-## Sidebar extracted components
+## 侧边栏提取的组件
 
-The sidebar started as a single large file. As features accumulated, components were extracted into `src/ui/sidebar/`:
+侧边栏最初是一个大型文件。随着功能增加，组件被提取到 `src/ui/sidebar/` 中：
 
-| Component | Purpose |
-|-----------|---------|
-| `AttachmentHandler` | Drag-and-drop file attachments, document parsing |
-| `AutocompleteHandler` | Slash commands and @-mentions in the input |
-| `ToolPickerPopover` | Tool selection popup when the agent needs to choose |
-| `VaultFilePicker` | File selection from the vault |
-| `HistoryPanel` | Conversation history browser |
-| `ContextDisplay` | Token usage and context window visualization |
-| `CondensationFeedback` | Notification when context condensing occurs |
-| `SuggestionBanner` | Proactive suggestions from the agent |
-| `OnboardingFlow` | First-run setup wizard |
+| 组件 | 用途 |
+|------|------|
+| `AttachmentHandler` | 拖放文件附件、文档解析 |
+| `AutocompleteHandler` | 输入中的斜杠命令和 @ 提及 |
+| `ToolPickerPopover` | Agent 需要选择时的工具选择弹出框 |
+| `VaultFilePicker` | 从保险库中选择文件 |
+| `HistoryPanel` | 对话历史浏览器 |
+| `ContextDisplay` | Token 使用率和上下文窗口可视化 |
+| `CondensationFeedback` | 上下文压缩发生时的通知 |
+| `SuggestionBanner` | Agent 的主动建议 |
+| `OnboardingFlow` | 首次运行设置向导 |
 
-These components follow a common pattern: they receive a parent element and the plugin instance, create their DOM subtree, and expose methods for updates. There is no component lifecycle manager. Each component owns a DOM subtree and exposes a small public API.
+这些组件遵循一个通用模式：它们接收一个父元素和插件实例，创建自己的 DOM 子树，并暴露更新方法。没有组件生命周期管理器。每个组件拥有一个 DOM 子树并暴露一个小型的公共 API。
 
-## CSS constraints
+## CSS 限制
 
-Inline styles (`element.style.color = 'red'`) are banned by the review bot. All styling goes through CSS classes prefixed with `agent-` (sidebar) or `agent-settings-` (settings). Utility classes use the `agent-u-` prefix. Dynamic styles (like a progress bar width) use `style.setProperty()` instead of direct property assignment.
+审核机器人禁止使用内联样式（`element.style.color = 'red'`）。所有样式都通过 CSS 类添加，前缀为 `agent-`（侧边栏）或 `agent-settings-`（设置）。工具类使用 `agent-u-` 前缀。动态样式（如进度条宽度）使用 `style.setProperty()` 而不是直接属性赋值。
 
-The CSS is authored as a single stylesheet bundled with the plugin. Obsidian's built-in theme variables (`--text-normal`, `--background-primary`, etc.) are used wherever possible so the plugin adapts to light/dark themes and custom themes.
+CSS 作为与插件捆绑的单个样式表编写。Obsidian 的内置主题变量（`--text-normal`、`--background-primary` 等）尽可能使用，以便插件适配亮/暗主题和自定义主题。
 
-## Modal system
+## 模态框系统
 
-Obsilo uses Obsidian's `Modal` class for dialogs: model configuration, code import, content editing, system prompt preview, task selection, and mode creation. Each modal is a separate class in `src/ui/settings/` or `src/ui/`. Modals follow Obsidian's pattern: extend `Modal`, override `onOpen` and `onClose`, build the DOM in `onOpen`.
+Obsilo 使用 Obsidian 的 `Modal` 类来处理对话框：模型配置、代码导入、内容编辑、系统提示预览、任务选择和模式创建。每个模态框都是 `src/ui/settings/` 或 `src/ui/` 中的独立类。模态框遵循 Obsidian 的模式：扩展 `Modal`、重写 `onOpen` 和 `onClose`、在 `onOpen` 中构建 DOM。
 
-## Rendering approach
+## 渲染方式
 
-There is no virtual DOM, no diffing, no reactive state. When something changes, the relevant section is cleared and rebuilt. The settings tab calls `this.display()`, which empties the container and reconstructs everything. The sidebar is more surgical: individual message elements are appended during streaming, and only specific elements update when tool results arrive.
+没有虚拟 DOM、没有差异比较、没有响应式状态。当内容发生变化时，相关的部分会被清除并重建。设置标签页调用 `this.display()`，它清空容器并重建所有内容。侧边栏则更加精准：单个消息元素在流式传输过程中被追加，只有特定的元素在工具结果到达时更新。
 
-Markdown rendering in chat responses uses Obsidian's built-in `MarkdownRenderer.render()`, which handles syntax highlighting, Wikilinks, and embedded content. This is one area where Obsilo gets framework-level rendering for free.
+聊天回复中的 Markdown 渲染使用 Obsidian 内置的 `MarkdownRenderer.render()`，它处理语法高亮、Wiki 链接和嵌入内容。这是 Obsilo 免费获得框架级渲染的一个领域。
 
 ## i18n
 
-All user-facing text goes through the `t()` function (`src/i18n`), which returns the localized string for the current language. The settings UI, sidebar labels, error messages, and tool descriptions are all translatable. Adding a new language means adding a locale file in `src/i18n/locales/`.
+所有面向用户的文本都通过 `t()` 函数（`src/i18n`）处理，它返回当前语言的本地化字符串。设置 UI、侧边栏标签、错误消息和工具描述都是可翻译的。添加新语言意味着在 `src/i18n/locales/` 中添加一个语言文件。
 
-## Task extraction and context
+## 任务提取和上下文
 
-Two features sit between the chat UI and the rest of the system. The `TaskExtractor` (`src/core/tasks/TaskExtractor.ts`) scans conversation messages for action items and presents them in a selection modal. Selected tasks can become vault notes via `TaskNoteCreator`. The `ContextTracker` (`src/core/context/ContextTracker.ts`) monitors token usage and feeds the `ContextDisplay` component, which shows how full the context window is and when condensation is approaching.
+有两个功能位于聊天 UI 和系统其余部分之间。`TaskExtractor`（`src/core/tasks/TaskExtractor.ts`）扫描对话消息以查找操作项，并在选择模态框中呈现。选定的任务可以通过 `TaskNoteCreator` 成为保险库笔记。`ContextTracker`（`src/core/context/ContextTracker.ts`）监控 token 使用率并向 `ContextDisplay` 组件提供数据，后者显示上下文窗口的满载程度以及压缩即将发生的时间。
 
-## The framework trade-off
+## 框架的权衡
 
-Building UI without a framework is slower and more repetitive than React or Svelte. Every button needs `createEl('button')`, every list needs manual DOM construction. But it has one real advantage: no build step for the UI, no framework version to maintain, and no compatibility issues with Obsidian updates. The DOM API is stable and unlikely to break between Obsidian versions. More verbose code in exchange for more durable compatibility, worth it for a plugin that needs to run reliably across many Obsidian versions.
+使用无框架方式构建 UI 比 React 或 Svelte 更慢、更重复。每个按钮都需要 `createEl('button')`，每个列表都需要手动构建 DOM。但它有一个真正的优势：UI 无需构建步骤、无需维护框架版本、无需担心与 Obsidian 更新的兼容性问题。DOM API 是稳定的，在 Obsidian 版本之间不太可能出问题。以更冗长的代码换取更持久的兼容性，对于需要跨多个 Obsidian 版本可靠运行的插件来说是值得的。

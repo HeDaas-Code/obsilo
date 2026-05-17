@@ -1,106 +1,84 @@
 ---
-title: Your First Knowledge Workflow
-description: Set up semantic search, discover hidden connections, and check your vault's health.
+title: 知识管理工作流
+description: 配置语义搜索，运行第一次知识发现，并将新笔记融入现有知识网络。
 ---
 
-# Your first knowledge workflow
+# 知识管理工作流
 
-By the end of this tutorial you will have:
+学完本教程后，你将：
 
-- Set up an embedding model for meaning-based search
-- Run your first semantic search
-- Found notes connected through the knowledge graph
-- Discovered implicit connections between unlinked notes
-- Checked your vault for structural issues
+- 配置好用于语义搜索的嵌入模型
+- 运行第一次知识发现
+- 将新笔记融入现有知识网络
 
-**Prerequisites:** Obsilo installed and a model configured. At least 20-30 notes in your vault. See [Getting Started](/tutorials/getting-started) if you haven't set up yet.
+## 什么是语义搜索
 
-## Step 1: Configure an embedding model
+大多数搜索工具只能匹配精确的关键词。「deep work」只能找到包含「deep work」这个短语的文件。
 
-Semantic search needs an embedding model to convert your notes into vectors. Open **Settings > Embeddings**.
+Obsilo 的语义搜索理解**含义**。搜索「improving focus」可以找到一篇标题为「深度工作」的笔记——即使「focus」这个词从来没有出现过。它使用向量嵌入（embeddings）将你的笔记转换为数学向量，然后在向量空间中寻找与你查询最相关的内容。
 
-**Recommended setup:**
+## 步骤 1：配置嵌入模型
 
-| Option | Provider | Why |
-|--------|----------|-----|
-| Quickest | OpenAI `text-embedding-3-small` | Fast, cheap, good quality |
-| Free | Google Gemini (if available) | No cost, decent quality |
-| Local | Ollama `nomic-embed-text` | Private, no API key needed |
+语义搜索需要一个嵌入模型来将文本转换为向量。
 
-1. Select a provider and enter your API key (if needed)
-2. Click **Test Connection** to verify it works
-3. Leave the other settings at their defaults
+1. 打开 **Obsidian 设置** > **Obsilo Agent**
+2. 进入 **Embeddings（嵌入）** 设置页
+3. 选择嵌入提供商（推荐使用 OpenAI，因为它的嵌入模型便宜且效果好）
+4. 填入 API 密钥
+5. 选择一个嵌入模型（推荐 `text-embedding-3-small`）
+6. 点击 **Rebuild index（重建索引）** 为你的整个知识库建立向量索引
 
-## Step 2: Build the index
+> [!NOTE]
+> 首次建立索引可能需要几分钟，取决于你的知识库大小。建立完成后，新笔记会自动索引。
 
-Still in **Settings > Embeddings**, click **Build Index**. Obsilo processes your notes in batches:
+## 步骤 2：运行第一次语义搜索
 
-- Small vault (< 100 notes): Takes about a minute
-- Medium vault (500 notes): A few minutes
-- Large vault (2000+ notes): 10-20 minutes
+配置好嵌入模型后，尝试在 Ask 模式下问 Obsilo 一个基于含义的问题，而不是精确关键词：
 
-The progress bar shows how many notes have been processed. You can keep working in Obsidian while it runs.
+```
+我的笔记里有哪些和「提升专注力」相关的内容？
+```
 
-Once done, you will see a confirmation with the number of indexed notes.
+Obsilo 会返回一个按相关度排序的笔记列表，即使这些笔记里没有「专注力」这个词。
 
-## Step 3: Search by meaning
+再试试：
 
-Open the Obsilo sidebar and try a semantic search:
+```
+我对项目规划一无所知，我的笔记里有相关的参考资料吗？
+```
 
-> "What do I know about improving my morning routine?"
+## 步骤 3：理解知识连接
 
-Instead of matching exact words, the agent finds notes whose meaning is related. A note titled "Sleep Habits" or "Daily Review Template" might show up, even though neither contains the words "morning routine".
+Obsilo 的知识层不只是简单的向量搜索。它有 4 个检索阶段：
 
-Watch the activity block. You will see `semantic_search` being called. The results include a relevance score for each note.
+1. **向量搜索** — 找到语义相关的内容
+2. **图扩展** — 顺着我链接（wikilinks）找相关内容
+3. **隐含连接** — 发现笔记之间没有明显链接但实际上相关的隐含关系
+4. **重排序** — 综合所有信号对结果进行最终排序
 
-## Step 4: Explore the knowledge graph
+这意味着 Obsilo 给你的不只是「包含这个关键词的笔记」，而是「与你的问题最相关的笔记，考虑到它们在你的知识网络中的位置」。
 
-Now try a question that pulls in connections:
+## 步骤 4：融入知识网络
 
-> "Find all notes related to productivity and show me how they connect to each other."
+当你有一篇新笔记时，可以让 Obsilo 帮你把它融入现有的知识结构：
 
-The agent uses graph expansion: after finding relevant notes via semantic search, it follows wikilinks, backlinks, and shared tags to discover related content. Notes that link to each other or share properties get pulled into the results.
+1. 在 Obsilo 中说：「integrate this note」，然后粘贴或附加新笔记内容
+2. Obsilo 会读取笔记内容，识别其中的实体（主题、人物、项目、概念）
+3. 对每个实体，在你的知识库中搜索现有相关笔记
+4. 展示一个包含建议操作的确认列表：添加标签、wikilinks、MOC 条目、创建桩笔记等
+5. 你批准后，Obsilo 执行所有更改
 
-## Step 5: Discover implicit connections
+## 步骤 5：维护知识库健康
 
-Go to **Settings > Embeddings** and enable **Implicit Connections**. This runs a background job that compares all your note vectors and flags pairs that are semantically similar but not linked.
+使用 Vault Health Check 工具定期检查和修复结构问题：
 
-After the analysis completes (this can take a few minutes on larger vaults), ask:
+1. 在 Obsilo 侧边栏点击健康徽章（如果显示了警告图标）
+2. 查看所有发现的问题（孤立笔记、缺失反向链接、失效链接、不一致标签）
+3. 点击「修复」，Obsilo 会批量修复所有问题
+4. 所有修复都有检查点备份，可以随时撤销
 
-> "Are there notes in my vault that should be linked but aren't?"
+## 进一步探索
 
-The agent shows you note pairs that discuss similar topics without any wikilink between them. For each pair, you can decide whether to add a link or dismiss the suggestion.
-
-## Step 6: Check your vault's health
-
-Ask the agent to run a structural check:
-
-> "Run a health check on my vault."
-
-The agent calls `vault_health_check` and reports findings grouped by category:
-
-- **Orphaned notes:** Notes with no incoming links
-- **Missing backlinks:** One-directional MOC links
-- **Broken links:** Wikilinks pointing to notes that do not exist
-- **Weak clusters:** Semantically similar notes that are not linked
-- **Inconsistent tags:** Spelling variants like `#meeting` vs `#meetings`
-
-You can fix issues directly from the results modal, and every fix creates a checkpoint you can undo.
-
-## Step 7: See what was remembered
-
-After this session, Obsilo has learned something about you. Check what it remembers:
-
-> "What do you remember about me?"
-
-The agent pulls from its 3-tier memory: the current session summary, any long-term facts it extracted, and your user profile. Over time, it uses these memories to give better answers and skip questions it already knows the answer to.
-
-## What you learned
-
-You now have semantic search running, which means Obsilo can find notes by meaning rather than just keywords. You know how to explore connections, discover missing links, and keep your vault healthy.
-
-**Next steps:**
-
-- [Knowledge discovery](/guides/knowledge-discovery): All search and graph features in detail
-- [Vault health check](/guides/vault-health): Regular maintenance for your vault
-- [Memory and personalization](/guides/memory-personalization): How the agent builds your profile
+- 深入了解知识层的工作原理：[知识层](../concepts/knowledge-layer)
+- 了解如何使用工具增强 AI 能力：[工具系统](../concepts/tool-system)
+- 查看完整工具列表：[工具参考](../reference/tools)

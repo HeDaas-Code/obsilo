@@ -1,121 +1,121 @@
 ---
-title: Knowledge Discovery
-description: Semantic search, knowledge graph, implicit connections, and local reranking.
+title: 知识发现
+description: 语义搜索、知识图谱、隐含关联和本地重排序。
 ---
 
-# Knowledge Discovery
+# 知识发现
 
-Most search tools match exact words. Obsilo understands meaning. A search for "improving focus" can find a note titled "Deep Work Techniques" even though the words do not overlap.
+大多数搜索工具只能匹配精确的词汇。Obsilo 能理解语义。搜索"改善专注力"可以找到一篇名为"深度工作技巧"的笔记，即使两个标题没有任何词汇重叠。
 
-## What is semantic search?
+## 什么是语义搜索？
 
-Traditional keyword search looks for exact text matches. Semantic search converts your notes into numerical vectors (embeddings) that represent their meaning. Your query is converted the same way, and the system finds notes whose vectors are closest to yours.
+传统的关键词搜索查找精确的文本匹配。语义搜索将您的笔记转换为代表其含义的数值向量（embeddings）。您的查询同样会被转换，系统会找到与您的向量最接近的笔记。
 
-This means:
-- *"recipes for pasta"* finds notes about Italian cooking, even if they never say "pasta"
-- *"how to sleep better"* finds your note titled "Evening Wind-Down Routine"
-- *"budget planning"* finds notes about financial forecasting and expense tracking
+这意味着：
+- *"意面食谱"* 能找到关于意大利烹饪的笔记，即使它们从未出现"意面"这个词
+- *"如何睡得更好"* 能找到您名为"夜间放松例程"的笔记
+- *"预算规划"* 能找到关于财务预测和支出跟踪的笔记
 
-## Setup
+## 设置
 
-Semantic search requires an embedding model to convert text into embeddings. You set this up once; Obsilo handles the rest.
+语义搜索需要一个嵌入模型来将文本转换为向量。您只需设置一次；Obsilo 会处理其余的工作。
 
-1. Open **Settings > Obsilo Agent > Embeddings**
-2. Choose an embedding model from the dropdown
-3. Click **Build Index** to process your vault
+1. 打开 **设置 > Obsilo Agent > 嵌入**
+2. 从下拉菜单中选择一个嵌入模型
+3. 点击 **构建索引** 来处理您的知识库
 
-:::tip Which embedding model?
-Any configured provider that supports embeddings will work. If you are using OpenAI or a compatible API, the default embedding model is a good starting point. Local models via Ollama work well if you want everything to stay on your machine.
+:::提示 选择哪个嵌入模型？
+任何配置好且支持嵌入的提供商都可以使用。如果您使用的是 OpenAI 或兼容 API，默认嵌入模型是一个不错的起点。通过 Ollama 使用本地模型效果也很好，如果您希望所有数据都留在本地设备上。
 :::
 
-### Building the index
+### 构建索引
 
-The first build processes every note in your vault. This can take a few minutes for large vaults (1000+ notes). After that, the index updates automatically:
+首次构建会处理知识库中的每一条笔记。对于大型知识库（1000+ 条笔记），这可能需要几分钟。之后，索引会自动更新：
 
-- On startup: new or changed files are re-indexed
-- On file changes: edits trigger re-indexing after a short delay
-- Manually: use the Rebuild Index button in settings at any time
+- 启动时：新文件或已修改的文件会被重新索引
+- 文件更改时：编辑会在短延迟后触发重新索引
+- 手动：随时可以使用设置中的重建索引按钮
 
-:::info Your notes stay local
-Embeddings are stored in a local database inside your vault. If you use a cloud embedding model, note content is sent to the provider for processing, but the resulting embeddings live only on your machine. With a local model, nothing leaves your device.
+:::信息 您的笔记保持本地存储
+嵌入向量存储在您知识库内的本地数据库中。如果您使用云端嵌入模型，笔记内容会被发送到提供商进行处理，但生成的嵌入向量仅存在于您的电脑上。使用本地模型时，不会向外部发送任何数据。
 :::
 
-## How search works under the hood
+## 搜索的工作原理
 
-When you or the agent run a semantic search, Obsilo combines multiple retrieval strategies:
+当您或 Agent 执行语义搜索时，Obsilo 会结合多种检索策略：
 
-### 1. BM25 (keyword matching)
+### 1. BM25（关键词匹配）
 
-A fast, traditional ranking algorithm. It finds notes that contain your search terms and ranks them by relevance. Good for specific terms like names, dates, or technical jargon.
+一种快速的传统排名算法。它查找包含搜索词的笔记，并按相关性排名。适用于特定术语，如姓名、日期或技术术语。
 
-### 2. Semantic similarity (embedding matching)
+### 2. 语义相似度（向量匹配）
 
-Compares the meaning of your query against the embeddings of every chunk in your vault. Finds conceptually related notes even without keyword overlap.
+将您查询的含义与知识库中每个块（chunk）的嵌入向量进行比较。即使没有关键词重叠，也能找到概念相关的笔记。
 
-### 3. Reciprocal rank fusion (RRF)
+### 3. 倒数排名融合（RRF）
 
-Combines the results from BM25 and semantic search into a single ranked list. Notes that score well on both methods rise to the top. This hybrid ranking beats either method alone.
+将 BM25 和语义搜索的结果组合成一个统一的排名列表。在两种方法中都得分高的笔记会上升到顶部。这种混合排名优于单独使用任何一种方法。
 
-## The knowledge graph
+## 知识图谱
 
-Beyond search, Obsilo builds a knowledge graph from the structure already in your vault:
+除了搜索，Obsilo 还从您知识库中已有的结构构建知识图谱：
 
-- **Wikilinks:** `[[note]]` connections between your notes
-- **Tags:** shared tags create implicit groupings
-- **MOC properties:** Maps of Content link related topics
+- **Wikilinks：** `[[笔记]]` 连接您笔记之间的关联
+- **标签：** 共享标签创建隐式分组
+- **MOC 属性：** 内容地图链接相关主题
 
-When the agent searches, it can expand results through the graph. If a search finds Note A, and Note A links to Note B, the agent can follow that link to pull in related content. You configure how many hops the graph expansion follows in settings.
+当 Agent 搜索时，它可以通过图谱扩展结果。如果搜索找到笔记 A，而笔记 A 链接到笔记 B，Agent 可以跟随该链接获取相关内容。您可以在设置中配置图谱扩展跟随的跳数。
 
-**Example:** Searching for "machine learning" finds your note on Neural Networks. Graph expansion then follows its wikilinks to your notes on Training Data and Model Evaluation, notes that search alone would miss.
+**示例：** 搜索"机器学习"会找到您关于神经网络的笔记。然后图谱扩展会跟随其 wikilinks 到您关于训练数据和模型评估的笔记，这些是单纯搜索会错过的内容。
 
-## Implicit connections
+## 隐含关联
 
-Obsilo can find notes that are semantically similar but not linked to each other: two notes about closely related topics, written months apart, that you never connected.
+Obsilo 可以找到语义相似但相互没有链接的笔记：两篇关于密切相关主题的笔记，间隔数月撰写，您从未将它们关联起来。
 
-When it finds them, a suggestion banner appears in the sidebar offering to show you the discovered relationships.
+当发现这些关联时，侧边栏会出现一条建议横幅，显示已发现的关联。
 
-:::tip Scales with vault size
-The larger your vault, the more useful implicit connections get.
+:::提示 随知识库规模扩展
+您的知识库越大，隐含关联就越有用。
 :::
 
-## Local reranking
+## 本地重排序
 
-After the initial search returns candidates, Obsilo can run a second pass using a cross-encoder model to improve result quality. This model runs entirely on your device via WebAssembly. No data is sent anywhere.
+当初始搜索返回候选结果后，Obsilo 可以使用交叉编码器模型进行第二次处理，以提高结果质量。该模型通过 WebAssembly 在您的设备上完全运行。不会向任何地方发送数据。
 
-The reranker (based on ms-marco-MiniLM) reads each candidate alongside your query and produces a more accurate relevance score. False positives get pushed down; actually relevant results move up.
+重排序器（基于 ms-marco-MiniLM）会读取每个候选结果以及您的查询，并生成更准确的相关性评分。误报会被推低；真正相关的结果会上升。
 
-Toggle it in **Settings > Obsilo Agent > Embeddings > Local Reranking**.
+在 **设置 > Obsilo Agent > 嵌入 > 本地重排序** 中切换开启。
 
-## Contextual retrieval
+## 上下文检索
 
-When enabled, Obsilo enriches each chunk with surrounding context before creating its embedding. It reads the note around a chunk and adds a brief description of what that chunk covers. This improves search accuracy for short or ambiguous passages.
+启用后，Obsilo 在创建嵌入向量之前会用周围上下文丰富每个块。它读取块周围的笔记内容，并添加该块所涵盖内容的简短描述。这提高了对短小或模糊段落的搜索准确性。
 
-For example, a chunk containing just a table of numbers becomes much more findable when the system adds context like "quarterly revenue figures from the 2025 financial review."
+例如，一个仅包含数字表格的块，在系统添加诸如"2025 年财务审查中的季度收入数据"之类的上下文后，会变得更容易被找到。
 
-## Configuration
+## 配置
 
-| Setting | Where | Recommendation |
+| 设置 | 位置 | 建议 |
 |---------|-------|----------------|
-| **Embedding model** | Settings > Embeddings | Choose based on your privacy needs and provider |
-| **Chunk size** | Settings > Embeddings > Advanced | Default works well for most vaults. Smaller chunks (256 tokens) for short notes, larger (1024) for long-form writing |
-| **Excluded folders** | Settings > Embeddings > Excluded | Exclude templates, archive, or attachment folders to keep the index focused |
-| **Auto-index** | Settings > Embeddings | Keep enabled for automatic updates on file changes |
-| **Graph hops** | Settings > Embeddings > Graph | 1-2 hops is usually enough. More hops find broader connections but may include noise |
-| **Local reranking** | Settings > Embeddings | Enable for better result quality at minimal performance cost |
+| **嵌入模型** | 设置 > 嵌入 | 根据您的隐私需求和提供商选择 |
+| **块大小** | 设置 > 嵌入 > 高级 | 默认设置对大多数知识库效果良好。短笔记用较小的块（256 tokens），长篇文章用较大的块（1024） |
+| **排除的文件夹** | 设置 > 嵌入 > 排除 | 排除模板、归档或附件文件夹，保持索引集中 |
+| **自动索引** | 设置 > 嵌入 | 保持开启以便文件更改时自动更新 |
+| **图谱跳数** | 设置 > 嵌入 > 图谱 | 1-2 跳通常就足够了。更多跳数可以找到更广泛的关联，但可能包含噪声 |
+| **本地重排序** | 设置 > 嵌入 | 开启以最小的性能成本获得更好的结果质量 |
 
-:::warning Large vaults
-For vaults with 5000+ notes, the initial index build may take 10-20 minutes depending on your embedding model. After that, incremental updates are fast. Consider excluding attachment folders or archives you rarely search.
+:::警告 大型知识库
+对于 5000+ 条笔记的知识库，初始索引构建可能需要 10-20 分钟，具体取决于嵌入模型。之后，增量更新很快。考虑排除您很少搜索的附件文件夹或归档。
 :::
 
-## Examples
+## 示例
 
-- *"Find notes related to my goals for this year"* (semantic search finds notes about resolutions, plans, and objectives)
-- *"What do I know about distributed systems?"* (searches by meaning across your vault)
-- *"Show me notes similar to @architecture-decisions"* (finds thematically related notes)
-- *"Are there any notes I should link together?"* (triggers implicit connection discovery)
+- *"找到与我今年目标相关的笔记"*（语义搜索找到关于决心、计划和目标的笔记）
+- *"我知道哪些关于分布式系统的知识？"*（在您的知识库中按含义搜索）
+- *"显示与 @架构决策 相似的笔记"*（找到主题相关的笔记）
+- *"有没有我应该关联在一起的笔记？"*（触发隐含关联发现）
 
-## Next steps
+## 下一步
 
-- [Vault Operations](/guides/vault-operations): Reading, writing, and organizing your files
-- [Memory & Personalization](/guides/memory-personalization): How Obsilo remembers your preferences
-- [Settings Reference](/reference/settings): All embedding and search settings explained
+- [知识库操作](/guides/vault-operations)：读取、写入和组织您的文件
+- [记忆与个性化](/guides/memory-personalization)：Obsilo 如何记住您的偏好
+- [设置参考](/reference/settings)：所有嵌入和搜索设置的详细说明

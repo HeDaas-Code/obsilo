@@ -1,87 +1,79 @@
 ---
-title: Your First Conversation
-description: Learn the basics of chatting with Obsilo, including modes, context, and how the agent thinks.
+title: 首次对话
+description: 了解 Obsilo 与普通聊天机器人的区别，以及如何开始第一次有意义的对话。
 ---
 
-# Your first conversation
+# 首次对话
 
-Obsilo is not a chatbot. It is an agent that can read, write, and search your vault. A few concepts help before you start.
+Obsilo 不是聊天机器人。它是一个可以读取、写入和搜索你的知识库的 Agent。在开始之前，有几个概念能帮你更好地使用它。
 
-## Modes
+## Agent 与聊天机器人的区别
 
-Obsilo has two built-in modes:
+普通 AI 工具在你复制粘贴内容后给你回复，然后就结束了。Obsilo 生活在你知识库里面——它可以读取你的笔记、理解笔记之间的关联、学习你的习惯，然后代表你采取行动。你可以把它想象成一个住在你的 Obsidian 里的同事。
 
-| Mode | What it does | When to use it |
-|------|-------------|----------------|
-| **Ask** | Read-only. Searches and analyzes but never changes your vault. | Questions, research, analysis |
-| **Agent** | Full access. Can read, write, edit, create, and delete files. | Active work, content creation, refactoring |
+## 两种模式：Ask 和 Agent
 
-Switch modes using the dropdown in the chat toolbar, or let the agent switch automatically.
+Obsilo 有两种内置模式：
 
-:::tip Start with Ask mode
-If you are new to Obsilo, start in **Ask** mode. It cannot change anything, so you can explore safely. Switch to **Agent** mode when you are ready to let it work.
-:::
+### Ask 模式（只读）
 
-## Context: what the agent knows
+Ask 模式只能读取和搜索你的知识库，不能写入任何内容。这是探索和提问的安全模式。默认只有读取工具和知识库智能工具可用。
 
-The agent sees:
-- Your message and the conversation history
-- The active note (if "auto-add active file" is enabled in Settings > Interface)
-- Attached files (drag & drop or click the paperclip icon)
-- @-mentioned files (type `@` in the chat to search your vault)
-- Its memory of past conversations (if memory is enabled)
+当你只是想查资料、找笔记、理解某个主题时，用 Ask 模式。
 
-It does **not** read your entire vault upfront. It searches and reads files on demand, using tools.
+### Agent 模式（读写）
 
-## The activity block
+Agent 模式可以使用所有工具——读取、搜索、编辑、创建文件、运行外部命令等。这个模式是真正干活的模式。你可以让它帮你整理笔记、写文档、创建结构。
 
-When the agent works, an expandable activity block appears below the response. It shows every tool call in real time:
+当你需要 Obsilo 实际帮你完成工作时，用 Agent 模式。
 
-- Tool name (e.g., `read_file`, `search_files`, `semantic_search`)
-- Key parameters (e.g., the file path or search query)
-- Result (expand to see details)
-- Diff badge for write operations: `+3 / -1` lines changed
+## 什么时候选哪个
 
-Click the activity block to expand or collapse it.
+| 场景 | 推荐模式 |
+|------|----------|
+| 查找某篇笔记的内容 | Ask |
+| 了解某个主题在知识库中的所有相关笔记 | Ask |
+| 整理和重构笔记 | Agent |
+| 创建新的笔记或文档 | Agent |
+| 生成报告或摘要 | Agent |
+| 批量修改文件 | Agent |
 
-## Approvals
+## 审批系统：为什么有时候需要等待
 
-By default, the agent asks for your approval before any write operation. An approval card appears showing exactly what the agent wants to do:
+Obsilo 默认是**fail-closed**（失败即停）的。这意味着在做任何写操作之前——无论是创建文件、编辑内容还是删除文件——它都会弹出审批提示。
 
-- Write file: shows the full content
-- Edit file: shows the diff
-- Delete file: shows which file
-- Move file: shows source and destination
+这样做是为了安全。AI 可能会犯错，或者对你的意图理解有偏差。审批系统让你有机会在修改真正发生之前检查和确认。
 
-Click **"Allow once"** to approve, or **"Always allow"** to auto-approve that category.
+> [!TIP]
+> 如果你发现某些操作每次都要审批，可以去设置里开启自动审批（Settings > Permissions）。但建议只在熟悉了 Obsilo 的行为模式后再这样做。
 
-:::warning Auto-approve with care
-Enabling auto-approve for writes means the agent acts without asking. The checkpoint system lets you undo, but review what changed after each task.
-:::
+## 如何开始
 
-## Keyboard shortcuts
+1. 在 Obsilo 侧边栏的输入框中输入你的问题或任务描述
+2. 如果需要，Obsilo 会展示它计划使用的工具
+3. 对于写操作，你会看到审批提示；点击「批准」继续
+4. 观察 Obsilo 是如何在后台一步步执行任务的
+5. 如果结果需要调整，直接告诉它
 
-| Shortcut | Action |
-|----------|--------|
-| `Enter` | Send message (configurable: Ctrl/Cmd+Enter) |
-| `Shift+Enter` | New line |
-| `/` | Open workflow/prompt picker |
-| `@` | Open file mention picker |
+## 第一个建议
 
-## Tips for better results
+从 Ask 模式开始，先探索一下你的知识库：
 
-Be specific. "Summarize the meeting notes from March" works better than "summarize my notes."
+> 「我的知识库中有哪些关于 [某个主题] 的笔记？」
 
-Mention files directly. Use `@filename` to point the agent to specific notes instead of hoping it finds them.
+然后试着问 Agent 模式帮你完成一个具体的整理任务：
 
-Use modes deliberately. Ask mode for questions, Agent mode for actions.
+> 「帮我把最近修改过的笔记整理一下，按主题分类」
 
-Check the activity block. It shows exactly what the agent did, which is useful for learning how it works and for catching mistakes.
+看看 Obsilo 是如何工作的，然后根据你的体验调整设置。
 
-Let it search. The agent can search your vault semantically. Ask broad questions like "What do I know about X?" and it will find the relevant notes.
+## 常见问题
 
-## Next steps
+**Q：Obsilo 会不会修改我不想要的笔记？**
+A：所有写操作默认需要审批。如果你开启了自动审批，建议只对熟悉的操作类型开启。
 
-- [Choosing a model](/guides/choosing-a-model): Provider comparison and recommendations
-- [Chat interface](/guides/chat-interface): Deep dive into all chat features
-- [Knowledge discovery](/guides/knowledge-discovery): Set up semantic search
+**Q：它能看到我所有的笔记吗？**
+A：默认情况下是的。你可以在保险库根目录放置 `.obsidian-agentignore` 文件来排除某些文件夹。
+
+**Q：我可以撤销 Obsilo 的操作吗？**
+A：可以。每次写操作前 Obsilo 会创建检查点。如果需要撤销，可以在设置中找到回滚功能。
