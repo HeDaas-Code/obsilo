@@ -1,72 +1,72 @@
 ---
 title: MCP
-description: How Obsilo acts as both an MCP client and an MCP server, connecting external tools and exposing vault access.
+description: Obsilo 如何同时作为 MCP 客户端和 MCP 服务器运行，连接外部工具并暴露保险库访问能力
 ---
 
 # MCP
 
-The Model Context Protocol (MCP) is a standard for connecting AI agents to external tools and data sources. Obsilo acts as both client and server: it connects to external MCP servers, and it exposes your vault to external agents like Claude Desktop.
+Model Context Protocol（MCP）是一种将 AI 智能体连接到外部工具和数据源的标准化协议。Obsilo 同时扮演客户端和服务器两个角色：它连接到你配置的外部 MCP 服务器，同时也将你的保险库暴露给 Claude Desktop 等外部智能体。
 
-## Two directions
+## 双向通信
 
 ```mermaid
 flowchart LR
-    E[External MCP servers] -->|tools & resources| O[Obsilo]
-    O -->|vault tools| C[Claude Desktop / other agents]
+    E[外部 MCP 服务器] -->|工具与资源| O[Obsilo]
+    O -->|保险库工具| C[Claude Desktop / 其他智能体]
 ```
 
-On the left: Obsilo reaches out to MCP servers you've configured. A GitHub server that can search issues. A database server that can run queries. Whatever tools those servers expose become available to the agent alongside its built-in tools.
+左侧：Obsilo 主动连接你配置的 MCP 服务器。比如一个可以搜索问题的 GitHub 服务器，或者一个可以执行查询的数据库服务器。这些服务器暴露的任何工具都会与内置工具一起出现在智能体的工具列表中。
 
-On the right: Obsilo itself is the server. Claude Desktop connects to it and gets access to your vault: searching notes, reading files, writing content. Your Obsidian vault becomes a tool that any MCP-compatible agent can use.
+右侧：Obsilo 本身就是服务器。Claude Desktop 连接到它并获取对你保险库的访问权限：搜索笔记、读取文件、写入内容。你的 Obsidian 保险库成为任何 MCP 兼容智能体都可以使用的工具。
 
-## Client side
+## 客户端侧
 
-You configure MCP servers in Settings under Providers > MCP Servers. Each server needs a transport type (stdio for local processes, SSE for legacy remote servers, or Streamable HTTP for modern remote servers) and connection details.
+你在「设置」的「Providers > MCP Servers」下配置 MCP 服务器。每个服务器需要指定传输类型（stdio 用于本地进程，SSE 用于旧版远程服务器，Streamable HTTP 用于现代远程服务器）以及连接详情。
 
-When Obsilo connects to a server, it discovers available tools and resources through MCP's standard discovery protocol. Those tools appear in the agent's tool list alongside built-in tools. The agent calls them like any other tool and doesn't need to know they're running in a separate process.
+当 Obsilo 连接到服务器时，它通过 MCP 标准发现协议发现可用的工具和资源。这些工具会与内置工具一起出现在智能体的工具列表中。智能体像调用其他工具一样调用它们，无需知道它们运行在独立的进程中。
 
-The MCP client handles reconnection automatically. If a server crashes or becomes unreachable, the client retries with exponential backoff. SSE transport is still supported as a fallback for older MCP servers that haven't migrated to Streamable HTTP.
+MCP 客户端自动处理重连。如果服务器崩溃或无法访问，客户端会使用指数退避进行重试。SSE 传输仍然作为尚未迁移到 Streamable HTTP 的旧版 MCP 服务器的备选方案被支持。
 
-Resources (a second MCP concept alongside tools) are also supported. If an MCP server exposes resources like documentation files or database schemas, Obsilo can list and read them. The agent pulls in resource content as additional context when needed.
+资源（与工具并列的第二个 MCP 概念）也被支持。如果 MCP 服务器暴露了文档文件或数据库 schema 等资源，Obsilo 可以列出并读取它们。智能体在需要时将资源内容作为额外上下文拉取进来。
 
-## Server side
+## 服务器侧
 
-The `McpBridge` (`src/mcp/McpBridge.ts`) runs an HTTP server on localhost (default port 27182) that speaks the MCP Streamable HTTP protocol. It exposes six tools organized in three tiers:
+`McpBridge`（`src/mcp/McpBridge.ts`）在本地主机上运行一个 HTTP 服务器（默认端口 27182），使用 MCP Streamable HTTP 协议。它暴露六个工具，分为三个层级：
 
-| Tier | Tools | What they do |
-|------|-------|-------------|
-| Read | `get_context`, `search_vault`, `read_notes` | Retrieve information without modifying anything |
-| Session | `sync_session`, `update_memory` | Manage conversation history and persistent memory |
-| Write | `write_vault`, `execute_vault_op` | Create, edit, delete files; run vault operations |
+| 层级 | 工具 | 功能 |
+|------|-------|-------|
+| 读取 | `get_context`、`search_vault`、`read_notes` | 获取信息，不修改任何内容 |
+| 会话 | `sync_session`、`update_memory` | 管理对话历史和持久化记忆 |
+| 写入 | `write_vault`、`execute_vault_op` | 创建、编辑、删除文件；执行保险库操作 |
 
-The `get_context` tool is mandatory. External agents should call it first in every conversation. It returns the user profile, memory, behavioral patterns, vault statistics, available skills, and rules, the same context that Obsilo's internal agent gets from its system prompt.
+`get_context` 工具是必需的。外部智能体应在每次对话开始时首先调用它。它返回用户画像、记忆、行为模式、保险库统计信息、可用的技能和规则，与 Obsilo 内部智能体从系统提示词获得的上下文相同。
 
-All tool calls dispatch directly to Obsilo's services within Obsidian's renderer process. No IPC overhead. The HTTP handler calls the same functions the internal agent uses.
+所有工具调用直接分派到 Obsilo 在 Obsidian 渲染进程内的服务。无 IPC 开销。HTTP 处理器调用与内部智能体使用的相同函数。
 
-The `search_vault` tool on the MCP server uses the same knowledge layer pipeline described on the [knowledge layer](./knowledge-layer.md) page. External agents get the same 4-stage retrieval (vector search, graph expansion, implicit connections, reranking) as the internal agent. The `write_vault` tool supports batch operations: create, edit, append, and delete in a single call.
+MCP 服务器上的 `search_vault` 工具使用[知识层](./knowledge-layer.md)页面描述的相同知识层管道。外部智能体获得与内部智能体相同的四阶段检索（向量搜索、图扩展、隐式连接、重排序）。`write_vault` 工具支持批量操作：单次调用可执行创建、编辑、追加和删除。
 
-## Remote access
+## 远程访问
 
-The local HTTP server is only reachable on your machine. For remote access (from Claude Desktop on a different device, or from the Claude web app), the `RelayClient` (`src/mcp/RelayClient.ts`) connects to a Cloudflare Workers relay.
+本地 HTTP 服务器只能在你的机器上访问。对于远程访问（从不同设备上的 Claude Desktop 或 Claude 网页应用），`RelayClient`（`src/mcp/RelayClient.ts`）连接到 Cloudflare Workers  relay。
 
-The relay uses HTTP long-polling. The client polls for incoming requests, processes them locally, and sends responses back. Authentication uses a token embedded in the URL. No data is stored on the relay; it is a passthrough.
+Relay 使用 HTTP 长轮询。客户端轮询传入请求，在本地处理，然后将响应发送回去。认证使用嵌入在 URL 中的令牌。Relay 上不存储任何数据，它只是一个透传通道。
 
-Remote access requires Obsidian to be running on your machine. The relay cannot access your vault on its own; it only forwards requests to the plugin.
+远程访问需要 Obsidian 在你的机器上运行。Relay 无法自行访问你的保险库，它只是将请求转发给插件。
 
-The `RelayClient` handles connection lifecycle: initial connection, reconnection with exponential backoff when the relay becomes unreachable, and clean shutdown when the plugin unloads. A callback notifies the Settings UI of the current tunnel URL so you can copy it into Claude Desktop's MCP configuration.
+`RelayClient` 处理连接生命周期：初始连接、当 relay 不可达时使用指数退避进行重连，以及插件卸载时的干净关闭。回调通知设置界面当前的隧道 URL，以便你可以将其复制到 Claude Desktop 的 MCP 配置中。
 
-## System context
+## 系统上下文
 
-External agents connecting via MCP don't automatically know how to behave. The `buildPrompts` function (`src/mcp/prompts/systemContext.ts`) generates context about your vault: size, structure, installed plugins, active rules. External agents receive this as part of the `get_context` response, giving them enough background to be useful without manual setup.
+通过 MCP 连接的外部智能体不会自动了解如何运作。`buildPrompts` 函数（`src/mcp/prompts/systemContext.ts`）生成关于你保险库的上下文：大小、结构、已安装的插件、启用的规则。外部智能体将这些作为 `get_context` 响应的一部分接收，使它们获得足够的背景知识而无需手动设置。
 
-## Practical use
+## 实际使用
 
-You can use Claude Desktop as your primary interface while Obsilo handles the vault integration. Or you can extend Obsilo by connecting it to specialized MCP servers (code analysis, web scraping, calendar integration). The protocol is the same in both directions.
+你可以将 Claude Desktop 作为主要界面，而由 Obsilo 处理保险库集成。或者你可以通过连接专门的 MCP 服务器来扩展 Obsilo（代码分析、网页抓取、日历集成）。两个方向的协议是相同的。
 
-The MCP server only runs while Obsidian is open. If you close Obsidian, Claude Desktop loses access to the vault tools until you reopen it.
+MCP 服务器只在 Obsidian 打开时运行。如果你关闭 Obsidian，Claude Desktop 将失去对保险库工具的访问权限，直到你重新打开它。
 
-## Session sync
+## 会话同步
 
-When you use Obsilo through Claude Desktop, the conversation history lives in Claude Desktop, not in Obsidian. Calling `sync_session` at the end of a conversation replicates the messages into Obsidian's conversation store. You can then browse the conversation in Obsidian's history panel, and the memory system can extract patterns from it.
+当你通过 Claude Desktop 使用 Obsilo 时，对话历史保存在 Claude Desktop 中，而不是在 Obsidian 中。在对话结束时调用 `sync_session` 会将消息复制到 Obsidian 的对话存储中。然后你可以在 Obsidian 的历史面板中浏览对话，记忆系统也可以从中提取模式。
 
-Session sync is marked as mandatory in the tool description. Claude Desktop is instructed to call it at the end of every conversation. In practice, it's best-effort. If Claude Desktop terminates the conversation without calling it, the session is simply missing from Obsidian's history.
+会话同步在工具描述中被标记为必需的。Claude Desktop 被指示在每次对话结束时调用它。在实践中，它是尽力而为的。如果 Claude Desktop 在未调用它的情况下终止对话，该会话只是不会出现在 Obsidian 的历史记录中。

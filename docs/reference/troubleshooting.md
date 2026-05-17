@@ -1,113 +1,113 @@
 ---
-title: Troubleshooting
-description: Common issues and how to fix them.
+title: 故障排除
+description: 常见问题及其解决方法。
 ---
 
-# Troubleshooting
+# 故障排除
 
-Solutions for the most common Obsilo issues. If your problem isn't listed here, check the **Debug** tab in settings or ask in the community forum.
+针对最常见的 Obsilo 问题的解决方案。如果你的问题不在此处，请查看设置中的 **调试** 选项卡，或在社区论坛中提问。
 
-## Model connection issues
+## 模型连接问题
 
-Symptom: "Connection failed" or "API key invalid" when testing a model.
+症状：测试模型时显示"连接失败"或"API 密钥无效"。
 
-| Cause | Solution |
+| 原因 | 解决方案 |
 |-------|----------|
-| Wrong API key | Double-check the key in **Settings > Models**. Regenerate it at the provider's website if unsure. |
-| Expired key | Some providers expire keys after inactivity. Generate a new one. |
-| Wrong base URL | For Azure and custom endpoints, verify the full URL including `/v1` if required. |
-| Rate limited | Wait a few minutes and try again. Consider setting a rate limit in **Settings > Loop**. |
-| Firewall or proxy | Obsidian uses Electron's network stack. Ensure your firewall allows outbound HTTPS. |
+| API 密钥错误 | 在 **设置 > 模型** 中仔细检查密钥。如有疑问，请在提供商网站上重新生成。 |
+| 密钥过期 | 部分提供商的密钥在闲置后会过期。生成一个新的密钥。 |
+| 基础 URL 错误 | 对于 Azure 和自定义端点，请验证完整 URL，包括所需的 `/v1`。 |
+| 速率限制 | 等待几分钟后重试。考虑在 **设置 > 循环** 中设置速率限制。 |
+| 防火墙或代理 | Obsidian 使用 Electron 的网络堆栈。确保你的防火墙允许出站 HTTPS 连接。 |
 
-:::tip Test button
-Always use the **Test connection** button after adding or changing a model. It verifies the key, endpoint, and model name in one step.
+:::tip 测试按钮
+添加或更改模型后，请始终使用 **测试连接** 按钮。它可以一步验证密钥、端点和模型名称。
 :::
 
-## Semantic search not working
+## 语义搜索不工作
 
-Symptom: `semantic_search` returns no results, or the agent says the index is not available.
+症状：`semantic_search` 返回无结果，或代理提示索引不可用。
 
-| Cause | Solution |
+| 原因 | 解决方案 |
 |-------|----------|
-| No embedding model configured | Go to **Settings > Embeddings** and set up an embedding model (e.g., OpenAI `text-embedding-3-small`). |
-| Index not built | Click **Rebuild index** in **Settings > Embeddings**. First build can take a few minutes for large vaults. |
-| Embedding API key missing | The embedding model may need its own API key. Check the embeddings settings. |
-| Auto-index disabled | If auto-index is off, new or changed notes won't be indexed. Enable it or rebuild manually. |
-| Vault too large | For vaults with 10,000+ notes, the initial build may take a while. Let it finish before searching. |
+| 未配置嵌入模型 | 前往 **设置 > 嵌入** 并设置一个嵌入模型（例如 OpenAI `text-embedding-3-small`）。 |
+| 索引未构建 | 在 **设置 > 嵌入** 中点击 **重建索引**。对于大型保险库，首次构建可能需要几分钟。 |
+| 嵌入 API 密钥缺失 | 嵌入模型可能需要自己的 API 密钥。检查嵌入设置。 |
+| 自动索引已禁用 | 如果自动索引关闭，新文件或更改过的文件将不会被索引。启用它或手动重建。 |
+| 保险库太大 | 对于包含 10,000+ 笔记的保险库初始构建可能需要一些时间。请等待其完成后再搜索。 |
 
-## Agent stuck in a loop
+## 代理陷入循环
 
-Symptom: The agent keeps calling tools repeatedly without making progress, or hits the iteration limit.
+症状：代理反复调用工具而没有进展，或达到迭代限制。
 
-| Cause | Solution |
+| 原因 | 解决方案 |
 |-------|----------|
-| Weak model | Smaller or older models sometimes repeat themselves. Switch to a stronger model (Claude Sonnet, GPT-4o). |
-| Consecutive error limit too high | Lower it in **Settings > Loop > Consecutive error limit** (default: 3). |
-| Max iterations too high | Set a reasonable cap in **Settings > Loop > Max iterations** (default: 25). |
-| Tool permission denied repeatedly | The agent asks for approval but you haven't responded. Approve or deny to let it continue. |
-| Context overflow | Enable **context condensing** in **Settings > Loop**. Lower the condensing threshold if you see 400-errors. |
+| 模型较弱 | 较小或较旧的模型有时会重复自己。切换到更强的模型（Claude Sonnet、GPT-4o）。 |
+| 连续错误限制过高 | 在 **设置 > 循环 > 连续错误限制** 中降低它（默认值：3）。 |
+| 最大迭代次数过高 | 在 **设置 > 循环 > 最大迭代次数** 中设置合理的上限（默认值：25）。 |
+| 工具权限反复被拒绝 | 代理请求批准但你未回应。批准或拒绝以让其继续。 |
+| 上下文溢出 | 在 **设置 > 循环** 中启用 **上下文压缩**。如果看到 400 错误，请降低压缩阈值。 |
 
-:::info Emergency stop
-Click the **Stop** button in the chat toolbar at any time to immediately halt the agent. Any changes already made can be undone via the checkpoint system.
+:::info 紧急停止
+随时点击聊天工具栏中的 **停止** 按钮可立即停止代理。已做的任何更改都可以通过检查点系统撤销。
 :::
 
-## Permission issues
+## 权限问题
 
-Symptom: The agent says it cannot perform an action, or approvals keep appearing for routine tasks.
+症状：代理表示无法执行操作，或常规任务持续出现批准请求。
 
-| Cause | Solution |
+| 原因 | 解决方案 |
 |-------|----------|
-| Auto-approve not enabled | Go to **Settings > Permissions** and enable auto-approve for categories you trust. |
-| File is in the ignore list | Check `.obsidian-agentignore` in your vault root. Remove the path if the agent should access it. |
-| File is protected | Check `.obsidian-agentprotected`. The agent can read but not write these files. |
-| Mode restricts tools | The current mode may not include the needed tool group. Switch to Agent mode or edit the mode's tools. |
+| 未启用自动批准 | 前往 **设置 > 权限** 并为你信任的类别启用自动批准。 |
+| 文件在忽略列表中 | 检查保险库根目录中的 `.obsidian-agentignore`。如果代理应该访问该路径，请将其移除。 |
+| 文件受保护 | 检查 `.obsidian-agentprotected`。代理可以读取但不能写入这些文件。 |
+| 模式限制工具 | 当前模式可能不包含所需的工具组。切换到代理模式或编辑模式的工具。 |
 
-## MCP server not connecting
+## MCP 服务器无法连接
 
-Symptom: "Failed to connect" or "Server unreachable" when adding or using an MCP server.
+症状：添加或使用 MCP 服务器时显示"连接失败"或"服务器不可达"。
 
-| Cause | Solution |
+| 原因 | 解决方案 |
 |-------|----------|
-| Wrong transport type | Only **SSE** and **streamable-http** are supported. Stdio doesn't work in Obsidian's Electron runtime. |
-| Server not running | Verify the MCP server is running and accessible at the configured URL. |
-| Wrong URL | Check the server URL. Common format: `http://localhost:3000/sse` or `http://localhost:3000/mcp`. |
-| CORS issues | If the MCP server runs locally, it may need CORS headers. Check the server's documentation. |
-| Network timeout | Increase the connection timeout in the MCP server settings, or check your network. |
+| 传输类型错误 | 仅支持 **SSE** 和 **streamable-http**。Stdio 在 Obsidian 的 Electron 运行时中不工作。 |
+| 服务器未运行 | 验证 MCP 服务器正在运行且可在配置的 URL 处访问。 |
+| URL 错误 | 检查服务器 URL。常见格式：`http://localhost:3000/sse` 或 `http://localhost:3000/mcp`。 |
+| CORS 问题 | 如果 MCP 服务器在本地运行，可能需要 CORS 头。查看服务器的文档。 |
+| 网络超时 | 在 MCP 服务器设置中增加连接超时时间，或检查你的网络。 |
 
-## Performance problems
+## 性能问题
 
-Symptom: Obsidian feels slow, the agent takes a long time, or the UI lags.
+症状：Obsidian 运行缓慢，代理花费时间过长，或 UI 卡顿。
 
-| Cause | Solution |
+| 原因 | 解决方案 |
 |-------|----------|
-| Large vault indexing | The semantic index build runs in the background. Wait for it to finish. |
-| Too many concurrent sub-agents | Limit subtask depth in **Settings > Loop** (default: 2). |
-| Large context window | Enable context condensing to keep the conversation from growing too large. |
-| Many MCP servers | Each connected server maintains an active connection. Remove unused servers. |
-| Slow model | Local models on limited hardware can be slow. Try a smaller model or use a cloud provider. |
+| 大型保险库正在索引 | 语义索引构建在后台运行。等待其完成。 |
+| 并发子代理过多 | 在 **设置 > 循环** 中限制子任务深度（默认值：2）。 |
+| 上下文窗口过大 | 启用上下文压缩以防止对话增长过大。 |
+| MCP 服务器过多 | 每个连接的服务器都保持活动连接。移除未使用的服务器。 |
+| 模型较慢 | 硬件有限的本地模型可能会很慢。尝试较小的模型或使用云提供商。 |
 
-## Memory not extracting
+## 记忆提取不工作
 
-Symptom: The agent doesn't remember things from previous conversations.
+症状：代理不记得之前对话中的内容。
 
-| Cause | Solution |
+| 原因 | 解决方案 |
 |-------|----------|
-| Memory extraction disabled | Enable it in **Settings > Memory > Memory extraction**. |
-| Chat history disabled | Memory extraction requires saved conversations. Enable **Chat history** first. |
-| Threshold too high | Lower the **Memory threshold** in settings (default: 0.7). A value of 0.5 captures more memories. |
-| Wrong memory model | If the memory model isn't configured or is offline, extraction silently fails. Check **Settings > Memory > Memory model**. |
-| Short conversations | Very brief exchanges may not contain extractable facts. This is normal. |
+| 记忆提取已禁用 | 在 **设置 > 记忆 > 记忆提取** 中启用它。 |
+| 聊天历史已禁用 | 记忆提取需要保存的对话。先启用 **聊天历史**。 |
+| 阈值过高 | 在设置中降低 **记忆阈值**（默认值：0.7）。值为 0.5 可以捕获更多记忆。 |
+| 记忆模型错误 | 如果记忆模型未配置或离线，提取将静默失败。检查 **设置 > 记忆 > 记忆模型**。 |
+| 对话过短 | 非常简短的交流可能不包含可提取的事实。这是正常的。 |
 
-## Common error messages
+## 常见错误消息
 
-| Error | Meaning | Fix |
+| 错误 | 含义 | 修复方法 |
 |-------|---------|-----|
-| `400: context_length_exceeded` | The conversation is too long for the model's context window. | Enable context condensing. Start a new chat for fresh context. |
-| `401: Unauthorized` | Invalid or expired API key. | Re-enter the key in Settings > Models. |
-| `429: Rate limit exceeded` | Too many API calls in a short time. | Set a rate limit in Settings > Loop, or wait and retry. |
-| `ECONNREFUSED` | Local server (Ollama, LM Studio) isn't running. | Start the local server, then retry. |
-| `Checkpoint failed` | Could not create a file snapshot before editing. | Check disk space. Increase snapshot timeout in Settings > Vault. |
+| `400: context_length_exceeded` | 对话对于模型的上下文窗口来说太长。 | 启用上下文压缩。开启新聊天以获得新的上下文。 |
+| `401: Unauthorized` | API 密钥无效或已过期。 | 在设置 > 模型中重新输入密钥。 |
+| `429: Rate limit exceeded` | 短时间内 API 调用过多。 | 在设置 > 循环中设置速率限制，或等待后重试。 |
+| `ECONNREFUSED` | 本地服务器（Ollama、LM Studio）未运行。 | 启动本地服务器，然后重试。 |
+| `Checkpoint failed` | 无法在编辑前创建文件快照。 | 检查磁盘空间。在设置 > 保险库中增加快照超时时间。 |
 
-:::tip Debug tab
-The **Debug** tab in settings shows the agent's internal ring buffer (last 100 log entries), the generated system prompt, and connection status for all providers. Start here when troubleshooting unexpected behavior.
+:::tip 调试选项卡
+设置中的 **调试** 选项卡显示代理的内部环形缓冲区（最近 100 条日志条目）、生成的系统提示以及所有提供商的连接状态。排除意外行为时请先查看此处。
 :::

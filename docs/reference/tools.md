@@ -1,156 +1,156 @@
 ---
-title: Tools Reference
-description: Complete list of all 49 tools available to the Obsilo agent, organized by group.
+title: 工具参考
+description: Obsilo 智能体可用的全部 49 个工具完整列表，按组分类。
 ---
 
-# Tools reference
+# 工具参考
 
-Obsilo has 49 built-in tools organized into six groups. The agent picks the right tool automatically based on your request. You never need to call tools yourself.
+Obsilo 内置了 49 个工具，分为六组。智能体会根据您的请求自动选择合适的工具。您无需自行调用工具。
 
-:::tip How tools work
-When you ask Obsilo to do something, it selects one or more tools, shows you what it plans to do (in the activity block), and asks for approval before any write operation. See [Safety & Control](/guides/safety-control) for details.
+:::tip 工具工作原理
+当您请求 Obsilo 执行某项操作时，它会选一个或多个工具，在活动块中向您展示计划执行的操作，并在任何写操作前请求您批准。详见[安全与控制](/guides/safety-control)。
 :::
 
-## Tool groups at a glance
+## 工具组概览
 
-| Group | Tools | Modifies vault | Needs approval |
-|-------|-------|----------------|----------------|
-| Read | 4 | No | No |
-| Vault Intelligence | 8 | No (except `open_note`) | No |
-| Edit | 15 | Yes | Yes |
-| Web | 2 | No | Yes (external access) |
-| Agent Control | 12 | Varies | Varies |
-| Plugin Integration | 6 | Varies | Yes |
-| MCP | 1+ | Depends on server | Yes |
+| 组别 | 工具数量 | 修改保管库 | 需要批准 |
+|-------|---------|------------|----------|
+| 读取 | 4 | 否 | 否 |
+| 保管库智能 | 8 | 否（`open_note` 除外） | 否 |
+| 编辑 | 15 | 是 | 是 |
+| 网络 | 2 | 否 | 是（外部访问） |
+| 智能体控制 | 12 | 不定 | 不定 |
+| 插件集成 | 6 | 不定 | 是 |
+| MCP | 1+ | 取决于服务器 | 是 |
 
-## Read tools
+## 读取工具
 
-Tools for reading, searching, and exploring your vault. These never modify anything.
+用于读取、搜索和探索保管库。这些工具不会修改任何内容。
 
-| Tool | Description | When to use |
+| 工具 | 描述 | 使用场景 |
 |------|-------------|-------------|
-| `read_file` | Read the complete content of a Markdown or plain-text file. | Before editing a file, or when you ask to see content. |
-| `read_document` | Parse and extract text from Office and data files (PPTX, XLSX, DOCX, PDF, JSON, XML, CSV). | For binary document formats, not for plain-text files. |
-| `list_files` | List files and folders in a directory, optionally recursive. | To discover folder structure or find files by location. |
-| `search_files` | Search for text or regex patterns across files, returning matching lines with line numbers. | For exact text or pattern matching across your vault. |
+| `read_file` | 读取 Markdown 或纯文本文件的完整内容。 | 在编辑文件前，或当您要求查看内容时。 |
+| `read_document` | 解析并从 Office 和数据文件（PPTX、XLSX、DOCX、PDF、JSON、XML、CSV）中提取文本。 | 用于二进制文档格式，不适用于纯文本文件。 |
+| `list_files` | 列出目录中的文件和文件夹，可选择递归列出。 | 用于发现文件夹结构或按位置查找文件。 |
+| `search_files` | 在文件中搜索文本或正则表达式模式，返回匹配行及行号。 | 用于在保管库中进行精确文本或模式匹配。 |
 
-## Vault intelligence tools
+## 保管库智能工具
 
-Tools that understand your vault's structure, metadata, and connections.
+用于理解保管库的结构、元数据和连接关系。
 
-| Tool | Description | When to use |
+| 工具 | 描述 | 使用场景 |
 |------|-------------|-------------|
-| `get_vault_stats` | Overview of your vault: note count, folder structure, top tags, recently modified files. | When you need a broad picture of your vault. |
-| `get_frontmatter` | Read all YAML frontmatter fields of a note (tags, aliases, dates, status, custom properties). | To check or inspect metadata before updating it. |
-| `search_by_tag` | Find all notes with given tags, supporting AND/OR matching and nested tags. | To filter notes by tags or categories. |
-| `get_linked_notes` | Get forward links and backlinks for a note. | To understand how notes connect in the graph. |
-| `get_daily_note` | Read (or create) a daily note for today, yesterday, or any offset. | To work with your daily notes. |
-| `open_note` | Open a note in the Obsidian editor. | After creating or editing a note so you can see the result. |
-| `semantic_search` | Find notes by meaning using AI-powered similarity search. | For natural-language questions about vault content ("What do I know about X?"). |
-| `query_base` | Query an Obsidian Bases database file and return matching records. | To retrieve structured data from a .base file. |
-| `vault_health_check` | Run structural checks: orphaned notes, missing backlinks, broken links, weak clusters, inconsistent tags. | To audit and maintain vault quality. See [Vault Health](/guides/vault-health). |
+| `get_vault_stats` | 保管库概览：笔记数量、文件夹结构、热门标签、最近修改的文件。 | 当您需要了解保管库的整体情况时。 |
+| `get_frontmatter` | 读取笔记的所有 YAML frontmatter 字段（标签、别名、日期、状态、自定义属性）。 | 在更新元数据前检查或查看。 |
+| `search_by_tag` | 查找具有给定标签的所有笔记，支持 AND/OR 匹配和嵌套标签。 | 按标签或分类筛选笔记。 |
+| `get_linked_notes` | 获取笔记的前向链接和反向链接。 | 理解笔记在关系图中的连接方式。 |
+| `get_daily_note` | 读取（或创建）今天的日记笔记、昨天的或任意偏移量的日记。 | 用于处理日记笔记。 |
+| `open_note` | 在 Obsidian 编辑器中打开笔记。 | 在创建或编辑笔记后，以便您查看结果。 |
+| `semantic_search` | 使用 AI 驱动的相似性搜索按含义查找笔记。 | 用于对保管库内容进行自然语言提问（"关于 X 我知道些什么？"）。 |
+| `query_base` | 查询 Obsidian Bases 数据库文件并返回匹配的记录。 | 从 .base 文件中检索结构化数据。 |
+| `vault_health_check` | 运行结构检查：孤立笔记、缺失反向链接、损坏链接、弱关联集群、不一致标签。 | 审核和维护保管库质量。详见[保管库健康](/guides/vault-health)。 |
 
-:::info Semantic search setup
-`semantic_search` requires an embedding model and a built index. Configure both in **Settings > Embeddings**. See [Knowledge Discovery](/guides/knowledge-discovery) for setup instructions.
+:::info 语义搜索设置
+`semantic_search` 需要嵌入模型和内置索引。在**设置 > 嵌入**中配置两者。详见[知识发现](/guides/knowledge-discovery)设置说明。
 :::
 
-## Edit tools
+## 编辑工具
 
-Tools that create, modify, or delete files in your vault. Each one triggers an approval prompt (unless auto-approved).
+用于在保管库中创建、修改或删除文件。每一个都会触发批准提示（除非已自动批准）。
 
-| Tool | Description | When to use |
+| 工具 | 描述 | 使用场景 |
 |------|-------------|-------------|
-| `write_file` | Create a new file or completely replace an existing file's content. | For new files or full rewrites. |
-| `edit_file` | Replace a specific string in an existing file, preserving surrounding content. | For targeted edits. The preferred way to modify files. |
-| `append_to_file` | Append content to the end of a file. | For daily notes, logs, and additive entries. |
-| `update_frontmatter` | Set, update, or remove frontmatter fields without touching note content. | To change metadata (tags, status, dates) cleanly. |
-| `create_folder` | Create a new folder, including parent folders if needed. | Before writing files to a new location. |
-| `delete_file` | Move a file or empty folder to the system trash (recoverable). | When you explicitly ask to delete something. |
-| `move_file` | Move or rename a file or folder. Obsidian auto-updates wikilinks. | To reorganize vault structure. |
-| `generate_canvas` | Create an Obsidian Canvas (.canvas) visualizing notes and their connections. | To visualize note relationships as a spatial map. |
-| `create_excalidraw` | Create an Excalidraw drawing with labeled boxes and connections. | To create diagrams and visual overviews. |
-| `create_base` | Create an Obsidian Bases (.base) database view from vault notes. | To build structured database views filtered by frontmatter. |
-| `update_base` | Add or replace a view in an existing Bases file. | To modify database views without recreating the file. |
-| `plan_presentation` | Plan a presentation from source material and a template using an internal AI call. | Always before `create_pptx` when using corporate templates. |
-| `create_pptx` | Create a PowerPoint presentation (.pptx) from structured slide data. | For creating PowerPoint files. |
-| `create_docx` | Create a Word document (.docx) with headings, sections, bullets, and tables. | For creating Word documents. |
-| `create_xlsx` | Create an Excel spreadsheet (.xlsx) with sheets, headers, data rows, and formulas. | For creating Excel files. |
+| `write_file` | 创建新文件或完全替换现有文件的内容。 | 用于新文件或完整重写。 |
+| `edit_file` | 替换现有文件中的特定字符串，保留周围内容。 | 用于有针对性的编辑。修改文件的首选方式。 |
+| `append_to_file` | 将内容追加到文件末尾。 | 用于日记笔记、日志和累加性条目。 |
+| `update_frontmatter` | 设置、更新或删除 frontmatter 字段，不影响笔记内容。 | 用于干净地更改元数据（标签、状态、日期）。 |
+| `create_folder` | 创建新文件夹，必要时包括父文件夹。 | 在将文件写入新位置前。 |
+| `delete_file` | 将文件或空文件夹移动到系统垃圾箱（可恢复）。 | 当您明确要求删除某内容时。 |
+| `move_file` | 移动或重命名文件或文件夹。Obsidian 自动更新 wiki 链接。 | 用于重新组织保管库结构。 |
+| `generate_canvas` | 创建一个 Obsidian Canvas（.canvas），可视化展示笔记及其连接关系。 | 将笔记关系可视化为空间地图。 |
+| `create_excalidraw` | 创建带有标签框和连接线的 Excalidraw 绘图。 | 用于创建图表和可视化概览。 |
+| `create_base` | 从保管库笔记创建 Obsidian Bases（.base）数据库视图。 | 用于构建按 frontmatter 筛选的结构化数据库视图。 |
+| `update_base` | 在现有 Bases 文件中添加或替换视图。 | 在不重建文件的情况下修改数据库视图。 |
+| `plan_presentation` | 使用内部 AI 调用，根据源材料和模板规划演示文稿。 | 在使用企业模板时，始终在 `create_pptx` 之前调用。 |
+| `create_pptx` | 从结构化的幻灯片数据创建 PowerPoint 演示文稿（.pptx）。 | 用于创建 PowerPoint 文件。 |
+| `create_docx` | 创建包含标题、分段、项目符号和表格的 Word 文档（.docx）。 | 用于创建 Word 文档。 |
+| `create_xlsx` | 创建包含工作表、表头、数据行和公式的 Excel 电子表格（.xlsx）。 | 用于创建 Excel 文件。 |
 
-## Web tools
+## 网络工具
 
-Tools for accessing the internet. Require Web Tools to be enabled in settings.
+用于访问互联网。需要在网上工具设置中启用。
 
-| Tool | Description | When to use |
+| 工具 | 描述 | 使用场景 |
 |------|-------------|-------------|
-| `web_fetch` | Fetch a URL and return its content as Markdown. Supports pagination for long pages. | To read a specific web page, documentation, or article. |
-| `web_search` | Search the web and return titles, URLs, and snippets. | For current or external information not in your vault. |
+| `web_fetch` | 获取 URL 并将其内容作为 Markdown 返回。支持长页面的分页。 | 读取特定的网页、文档或文章。 |
+| `web_search` | 搜索网络并返回标题、URL 和摘要。 | 用于获取不在您保管库中的当前或外部信息。 |
 
-## Agent control tools
+## 智能体控制工具
 
-Internal tools the agent uses to manage its own workflow.
+智能体用于管理自身工作流的内部工具。
 
-| Tool | Description | When to use |
+| 工具 | 描述 | 使用场景 |
 |------|-------------|-------------|
-| `ask_followup_question` | Ask you a clarifying question with optional answer choices. | When your request is genuinely ambiguous. |
-| `attempt_completion` | Signal that a multi-step task is done and log a summary. | After completing a tool-based workflow. |
-| `update_todo_list` | Publish a visible task checklist for multi-step work. | For tasks with 3 or more distinct steps. |
-| `new_task` | Spawn a sub-agent with a fresh context for isolated or parallel work. | For tasks (5+ steps) that benefit from delegation. |
-| `switch_mode` | Switch to a different agent mode (e.g., from Ask to Agent). | When the current task needs a different set of tools or behavior. |
-| `evaluate_expression` | Execute TypeScript code in an isolated sandbox with vault access. | For batch operations, computations, data transforms, or API calls beyond built-in tools. |
-| `manage_skill` | Create, update, delete, or list skills (persistent instruction sets). | To save a reusable approach for a specific task type. |
-| `manage_source` | Manage context sources: persistent text blocks injected into every conversation. | To always include certain context like project rules. |
-| `manage_mcp_server` | Add, remove, or test MCP server connections. | To connect external tool servers. |
-| `configure_model` | Add, select, or test an LLM model configuration. | To set up a new AI model or switch the active one. |
-| `update_settings` | Change Obsilo plugin settings or apply permission presets. | When you ask the agent to adjust its own configuration. |
-| `read_agent_logs` | Read the agent's internal console logs for self-debugging. | To diagnose errors or understand what happened. |
+| `ask_followup_question` | 向您提出澄清性问题，可选择提供答案选项。 | 当您的请求确实不明确时。 |
+| `attempt_completion` | 发出多步骤任务已完成并记录摘要的信号。 | 在完成基于工具的工作流后。 |
+| `update_todo_list` | 发布可见的任务检查清单，用于多步骤工作。 | 对于包含 3 个或更多不同步骤的任务。 |
+| `new_task` | 生成一个具有全新上下文的子智能体，用于独立或并行工作。 | 对于有益于委托的（5 个或更多步骤）任务。 |
+| `switch_mode` | 切换到不同的智能体模式（例如从问答模式切换到智能体模式）。 | 当当前任务需要不同的工具集或行为时。 |
+| `evaluate_expression` | 在具有保管库访问权限的隔离沙箱中执行 TypeScript 代码。 | 用于批量操作、计算、数据转换或超出内置工具能力的 API 调用。 |
+| `manage_skill` | 创建、更新、删除或列出技能（持久化指令集）。 | 为特定任务类型保存可重用的方法。 |
+| `manage_source` | 管理上下文源：注入每个会话的持久文本块。 | 用于始终包含某些上下文，如项目规则。 |
+| `manage_mcp_server` | 添加、移除或测试 MCP 服务器连接。 | 用于连接外部工具服务器。 |
+| `configure_model` | 添加、选择或测试 LLM 模型配置。 | 用于设置新的 AI 模型或切换当前活跃的模型。 |
+| `update_settings` | 更改 Obsilo 插件设置或应用权限预设。 | 当您要求智能体调整自身配置时。 |
+| `read_agent_logs` | 读取智能体的内部控制台日志，用于自我调试。 | 诊断错误或了解发生了什么。 |
 
-## Plugin integration tools
+## 插件集成工具
 
-Tools that interact with other Obsidian plugins installed in your vault.
+与已安装到保管库中的其他 Obsidian 插件交互的工具。
 
-| Tool | Description | When to use |
+| 工具 | 描述 | 使用场景 |
 |------|-------------|-------------|
-| `execute_command` | Run an Obsidian command by ID (e.g., "daily-notes:open"). | To trigger any plugin's commands. |
-| `call_plugin_api` | Call a JavaScript API method on a plugin (Dataview, Omnisearch, etc.). | To retrieve structured data from plugins. |
-| `enable_plugin` | Enable or disable an installed community plugin. | When a disabled plugin is needed for a task. |
-| `resolve_capability_gap` | Search for plugins that could help when no built-in tool matches. | When the agent cannot fulfill a request with existing tools. |
-| `execute_recipe` | Run a pre-defined recipe for external CLI tools (e.g., Pandoc export). | For validated command-line integrations. |
-| `render_presentation` | Render a PPTX file to images for visual quality inspection. | After creating a presentation, to verify layout and content. |
+| `execute_command` | 按 ID 运行 Obsidian 命令（例如 "daily-notes:open"）。 | 触发任何插件的命令。 |
+| `call_plugin_api` | 在插件（Dataview、Omnisearch 等）上调用 JavaScript API 方法。 | 从插件检索结构化数据。 |
+| `enable_plugin` | 启用或禁用已安装的社区插件。 | 当任务需要使用已禁用的插件时。 |
+| `resolve_capability_gap` | 当没有内置工具匹配时，搜索可能有帮助的插件。 | 当智能体无法用现有工具完成请求时。 |
+| `execute_recipe` | 运行预定义的外部 CLI 工具配方（例如 Pandoc 导出）。 | 用于经验证的命令行集成。 |
+| `render_presentation` | 将 PPTX 文件渲染为图像进行视觉质量检查。 | 创建演示文稿后，验证布局和内容。 |
 
-## MCP tools
+## MCP 工具
 
-| Tool | Description | When to use |
+| 工具 | 描述 | 使用场景 |
 |------|-------------|-------------|
-| `use_mcp_tool` | Call any tool provided by a connected MCP server. | When an external MCP server offers the functionality you need. |
+| `use_mcp_tool` | 调用已连接 MCP 服务器提供的任何工具。 | 当外部 MCP 服务器提供您需要的功能时。 |
 
-:::tip Custom modes control tool access
-Each mode (Ask, Agent, or your custom modes) can enable or disable specific tool groups. Configure per-mode tools in **Settings > Modes**. Ask mode only has read tools enabled by default.
+:::tip 自定义模式控制工具访问
+每种模式（问答模式、智能体模式或您的自定义模式）都可以启用或禁用特定的工具组。在**设置 > 模式**中配置每种模式的工具。问答模式默认只启用读取工具。
 :::
 
-## Quick-pick guide
+## 快速选择指南
 
-Not sure which tool the agent should use? This table maps common tasks to the right tool.
+不确定智能体应该使用哪个工具？这张表将常见任务与正确的工具对应起来。
 
-| You want to... | Best tool | Why not the alternative |
+| 您想... | 最佳工具 | 为什么不是替代方案 |
 |----------------|-----------|------------------------|
-| Find notes about a topic | `semantic_search` | `search_files` only matches exact text, not meaning |
-| Find an exact phrase | `search_files` | `semantic_search` finds similar meanings, not exact matches |
-| Check a note's tags | `get_frontmatter` | `read_file` reads the whole file, unnecessary for metadata |
-| Add a paragraph to a note | `edit_file` | `write_file` replaces the entire file |
-| Add an entry to a log | `append_to_file` | `edit_file` requires matching existing text |
-| Create a Word document | `create_docx` | `write_file` cannot produce binary .docx format |
-| Create a PowerPoint | `plan_presentation` then `create_pptx` | Skipping `plan_presentation` leaves empty shapes |
-| Read a PDF or PPTX | `read_document` | `read_file` returns raw binary for non-text formats |
-| Run a Dataview query | `call_plugin_api` | `search_files` cannot execute Dataview logic |
-| Process 50 files at once | `evaluate_expression` | Calling `edit_file` 50 times is slow and error-prone |
-| Look something up online | `web_search` then `web_fetch` | Vault tools only search local files |
-| Create a visual map of notes | `generate_canvas` | Manual note arrangement is tedious |
+| 查找关于某个主题的笔记 | `semantic_search` | `search_files` 只能匹配精确文本，不能匹配含义 |
+| 查找精确短语 | `search_files` | `semantic_search` 查找相似含义，不是精确匹配 |
+| 检查笔记的标签 | `get_frontmatter` | `read_file` 读取整个文件，查看元数据不必要的 |
+| 向笔记添加段落 | `edit_file` | `write_file` 会替换整个文件 |
+| 向日志添加条目 | `append_to_file` | `edit_file` 需要匹配现有文本 |
+| 创建 Word 文档 | `create_docx` | `write_file` 无法生成二进制的 .docx 格式 |
+| 创建 PowerPoint | `plan_presentation` 然后 `create_pptx` | 跳过 `plan_presentation` 会留下空形状 |
+| 读取 PDF 或 PPTX | `read_document` | `read_file` 对非文本格式返回原始二进制 |
+| 运行 Dataview 查询 | `call_plugin_api` | `search_files` 无法执行 Dataview 逻辑 |
+| 一次处理 50 个文件 | `evaluate_expression` | 调用 `edit_file` 50 次既慢又容易出错 |
+| 在网上查找信息 | `web_search` 然后 `web_fetch` | 保管库工具只能搜索本地文件 |
+| 创建笔记的可视化地图 | `generate_canvas` | 手动整理笔记很繁琐 |
 
-## Notes on tool behavior
+## 工具行为说明
 
-- Read tools run in parallel. When the agent needs to read multiple files, it reads them all at once.
-- Edit tools run sequentially. Write operations are processed one at a time to avoid conflicts.
-- Checkpoints are automatic. Before any edit tool modifies a file, a snapshot is created. You can undo any change.
-- The sandbox is isolated. Code in `evaluate_expression` runs in a sandboxed environment with limited vault access. It cannot access the file system directly or run shell commands.
-- Office tools create binary files. `create_pptx`, `create_docx`, and `create_xlsx` produce real Office files that open in Microsoft Office, Google Docs, or LibreOffice.
-- Quality gates apply. Some tools (`create_pptx`, `create_docx`, `create_xlsx`, `generate_canvas`, `create_excalidraw`) include a self-check step where the agent verifies the output meets quality standards.
+- 读取工具并行运行。当智能体需要读取多个文件时，它会同时读取所有文件。
+- 编辑工具顺序运行。写操作一次处理一个，以避免冲突。
+- 检查点自动创建。在任何编辑工具修改文件之前，会创建快照。您可以撤销任何更改。
+- 沙箱是隔离的。`evaluate_expression` 中的代码在具有有限保管库访问权限的沙箱环境中运行。它无法直接访问文件系统或运行 shell 命令。
+- Office 工具创建二进制文件。`create_pptx`、`create_docx` 和 `create_xlsx` 生成真实的 Office 文件，可用 Microsoft Office、Google Docs 或 LibreOffice 打开。
+- 质量门控适用。某些工具（`create_pptx`、`create_docx`、`create_xlsx`、`generate_canvas`、`create_excalidraw`）包含自我检查步骤，智能体会在其中验证输出是否达到质量标准。

@@ -1,139 +1,139 @@
 ---
-title: The Agent Loop
-description: How Obsilo turns a single message into a multi-step, tool-using conversation.
+title: Agent 循环
+description: Obsilo 如何将单条消息转化为多步骤、使用工具的对话。
 ---
 
-# The agent loop
+# Agent 循环
 
-A chatbot responds once. An agent loops. That distinction is the single most important thing to understand about Obsilo.
+聊天机器人一次性回复。Agent 会循环。这是理解 Obsilo 最关键的一点。
 
-When you send a message, Obsilo passes it to the language model along with a system prompt and tool definitions. The model responds with text, tool calls, or both. If there are tool calls, Obsilo executes them, appends the results to the conversation history, and sends everything back to the model. This repeats until the model responds with only text, calls `attempt_completion`, or a safety limit stops the loop.
+当你发送一条消息时，Obsilo 会将其连同系统提示词和工具定义一起传递给语言模型。模型会返回文本、工具调用，或两者兼有。如果存在工具调用，Obsilo 会执行它们，将结果追加到对话历史中，然后将所有内容发送回模型。这个过程不断重复，直到模型仅返回文本、调用 `attempt_completion`，或安全限制停止循环。
 
-The entire loop lives in one file: `src/core/AgentTask.ts`.
+整个循环存在于一个文件中：`src/core/AgentTask.ts`。
 
-## The loop, visually
+## 循环图示
 
 ```mermaid
 flowchart TD
-    A["User message"] --> B["Send to LLM"]
-    B --> C{"Tool calls\nin response?"}
-    C -- yes --> D["Execute tools"]
-    D --> E["Append results\nto history"]
+    A["用户消息"] --> B["发送给 LLM"]
+    B --> C{"响应中有\n工具调用？"}
+    C -- 是 --> D["执行工具"]
+    D --> E["将结果追加\n到历史记录"]
     E --> B
-    C -- no --> F["Return response"]
+    C -- 否 --> F["返回响应"]
 ```
 
-That's it. Everything else on this page is about controlling, protecting, and extending this loop.
+仅此而已。本页其余内容都是关于控制、保护和扩展这个循环的。
 
-## What happens at each step
+## 每一步发生了什么
 
-The loop starts by assembling a system prompt from 16 modular sections: mode definition, available tools, active rules, loaded skills, memory context, and more. The system prompt is cached and only rebuilt when something changes (a mode switch, a tool availability toggle).
+循环从组装包含 16 个模块化部分的系统提示词开始：模式定义可用工具、活跃规则、已加载技能、记忆上下文等。系统提示词会被缓存，只在发生变化时重建（模式切换、工具可用性切换）。
 
-The assembled prompt and conversation history go to the AI provider. Obsilo streams the response, firing `onText()` for each text chunk and collecting any `tool_use` blocks.
+组装好的提示词和对话历史会被发送到 AI 提供商。Obsilo 流式传输响应，为每个文本块触发 `onText()`，并收集所有 `tool_use` 块。
 
-If the response contains tool calls, each one goes through `ToolExecutionPipeline` (`src/core/tool-execution/ToolExecutionPipeline.ts`). The pipeline validates paths, checks approval requirements, creates checkpoints before write operations, executes the tool, and logs the result. No tool bypasses this pipeline, not even MCP tools from external servers.
+如果响应中包含工具调用，每个调用都会经过 `ToolExecutionPipeline`（`src/core/tool-execution/ToolExecutionPipeline.ts`）。该管道会验证路径、检查审批要求、在写操作前创建检查点、执行工具并记录结果。没有工具能绕过这个管道，即使是来自外部服务器的 MCP 工具也不例外。
 
-Read-only tools from the parallel-safe set (`read_file`, `search_files`, `semantic_search`, etc.) run concurrently via `Promise.all()`. Write tools and control-flow tools run one at a time.
+来自并行安全集合的只读工具（`read_file`、`search_files`、`semantic_search` 等）通过 `Promise.all()` 并发运行。写工具和控制流工具则逐个运行。
 
-The tool results go back into the conversation history as structured result blocks. Then the loop sends the updated history to the model for the next iteration.
+工具结果会作为结构化结果块返回到对话历史中。然后循环将更新后的历史记录发送给模型进行下一次迭代。
 
-When the model responds with only text and no tool calls, or when it calls `attempt_completion`, the loop ends and the response goes back to the UI.
+当模型仅返回文本且无工具调用，或当它调用 `attempt_completion` 时，循环结束，响应返回到 UI。
 
-## AgentTask constructor
+## AgentTask 构造函数
 
-`AgentTask` takes 12 parameters that control loop behavior.
+`AgentTask` 接受 12 个参数来控制循环行为。
 
-| Parameter | Default | What it does |
-|-----------|---------|-------------|
-| `api` | required | AI provider handler (Anthropic or OpenAI) |
-| `toolRegistry` | required | Central tool registry |
-| `taskCallbacks` | required | UI callbacks for text, tool events, completion |
-| `modeService` | optional | Mode switching and web-tools toggle |
-| `consecutiveMistakeLimit` | `0` (off) | Abort after N consecutive tool errors |
-| `rateLimitMs` | `0` (off) | Minimum milliseconds between iterations |
-| `condensingEnabled` | `true` | Automatic context condensing |
-| `condensingThreshold` | `70` | Condense when tokens exceed this % of context window |
-| `powerSteeringFrequency` | `0` (off) | Re-inject mode instructions every N iterations |
-| `maxIterations` | `25` | Hard cap on loop iterations |
-| `depth` | `0` | Current sub-agent nesting depth |
-| `maxSubtaskDepth` | `2` | Maximum nesting depth for spawned child agents |
+| 参数 | 默认值 | 作用 |
+|------|--------|------|
+| `api` | 必填 | AI 提供商处理器（Anthropic 或 OpenAI） |
+| `toolRegistry` | 必填 | 中心工具注册表 |
+| `taskCallbacks` | 必填 | 文本、工具事件、完成的 UI 回调 |
+| `modeService` | 可选 | 模式切换和 Web 工具开关 |
+| `consecutiveMistakeLimit` | `0`（关闭） | 连续 N 次工具错误后中止 |
+| `rateLimitMs` | `0`（关闭） | 迭代之间的最小毫秒数 |
+| `condensingEnabled` | `true` | 自动上下文压缩 |
+| `condensingThreshold` | `70` | 当 token 超过上下文窗口的此百分比时压缩 |
+| `powerSteeringFrequency` | `0`（关闭） | 每 N 次迭代重新注入模式指令 |
+| `maxIterations` | `25` | 循环迭代的硬上限 |
+| `depth` | `0` | 当前子 agent 嵌套深度 |
+| `maxSubtaskDepth` | `2` | 生成的子 agent 的最大嵌套深度 |
 
-The `run()` method takes a config object with the user message, task ID, initial mode, conversation history, and optional context like rules, skills, and memory.
+`run()` 方法接受一个配置对象，包含用户消息、任务 ID、初始模式、对话历史，以及可选的规则、技能和记忆等上下文。
 
-## Fast path execution
+## 快速路径执行
 
-Not every task needs the full ReAct loop. When the agent has solved the same kind of task before, it can skip most of the iterative reasoning and execute a pre-planned sequence of tool calls. This is the fast path, the single largest token cost optimization in the system.
+并非每个任务都需要完整的 ReAct 循环。当 agent 曾经解决过同类型的任务时，它可以跳过大部分迭代推理，执行预先计划好的工具调用序列。这就是快速路径，是系统中单次 token 成本优化的最大来源。
 
-The fast path depends on the recipe system (see [memory](./memory-system)). When a user message arrives, `RecipeMatchingService` checks whether a matching recipe exists. If one matches and has been used successfully at least three times, the fast path activates:
+快速路径依赖于配方系统（参见[记忆](./memory-system)）。当用户消息到达时，`RecipeMatchingService` 检查是否存在匹配的配方。如果找到一个匹配且已成功使用至少三次，快速路径就会激活：
 
-1. A single planner LLM call receives the user message plus the recipe and produces a concrete execution plan: a JSON array of tool calls with parameters.
-2. The plan gets executed deterministically through the same `ToolExecutionPipeline`, without further LLM calls. Read operations run in parallel, writes sequentially.
-3. After execution, the normal agent loop takes over for one or two final iterations to formulate the response and present the result.
+1. 单一的规划器 LLM 调用接收用户消息加上配方，并生成一个具体的执行计划：一个包含工具调用参数的 JSON 数组。
+2. 该计划通过相同的 `ToolExecutionPipeline` 确定性地执行，不再进行进一步的 LLM 调用。读操作并行运行，写操作顺序执行。
+3. 执行完成后，正常的 agent 循环接管一到两次最终迭代，以形成响应并呈现结果。
 
-Instead of eight LLM calls and 634,000 tokens, the fast path typically needs two to three calls and about 70,000 tokens.
+快速路径通常需要两到三次 LLM 调用和约 70,000 个 token，而不是八次 LLM 调用和 634,000 个 token。
 
-The fast path has guardrails. If the planner produces invalid JSON or references unknown tools, the system falls back to the standard ReAct loop. All tool invocations still pass through `ToolExecutionPipeline` with approval checks, checkpoints, and logging. No governance is bypassed.
+快速路径有护栏。如果规划器产生无效的 JSON 或引用了未知的工具，系统会回退到标准 ReAct 循环。所有工具调用仍然通过 `ToolExecutionPipeline` 进行审批检查、检查点和日志记录。没有任何治理被绕过。
 
 ```mermaid
 flowchart TD
-    A["User message"] --> B{"Recipe\nmatch?"}
-    B -- no --> C["Standard ReAct loop"]
-    B -- yes --> D["Planner LLM call"]
-    D --> E{"Valid\nplan?"}
-    E -- no --> C
-    E -- yes --> F["Execute tool batch"]
-    F --> G["1-2 finishing iterations"]
-    G --> H["Return response"]
+    A["用户消息"] --> B{"配方\n匹配？"}
+    B -- 否 --> C["标准 ReAct 循环"]
+    B -- 是 --> D["规划器 LLM 调用"]
+    D --> E{"计划\n有效？"}
+    E -- 否 --> C
+    E -- 是 --> F["执行工具批次"]
+    F --> G["1-2 次收尾迭代"]
+    G --> H["返回响应"]
 ```
 
-## Context externalization
+## 上下文外部化
 
-Tool results accumulate in the conversation history and are resent with every API call. A semantic search returns 20,000 characters. Reading a note adds another 20,000. After eight iterations, tool results alone can exceed 250,000 tokens.
+工具结果积累在对话历史中，并在每次 API 调用时重新发送。语义搜索返回 20,000 个字符。读取一条笔记又增加 20,000 个。经过八次迭代后，仅工具结果就可能超过 250,000 个 token。
 
-Context externalization intercepts large tool results before they enter the history. When a result exceeds 2,000 characters, the full content gets written to a temporary file. The history receives a compact reference: what was found, the top entries with relevance scores, and the file path where the full data lives.
+上下文外部化在大型工具结果进入历史之前将其拦截。当结果超过 2,000 个字符时，完整内容会被写入临时文件。历史记录收到一个紧凑的引用：发现了什么、具有相关性分数的顶部条目，以及完整数据所在的文件路径。
 
-`ResultExternalizer` (`src/core/tool-execution/ResultExternalizer.ts`) handles this, called from `ToolExecutionPipeline` after each tool execution. Externalization is transparent to tools: they return full results as before. The pipeline decides what enters the history.
+`ResultExternalizer`（`src/core/tool-execution/ResultExternalizer.ts`）处理此事，在每次工具执行后从 `ToolExecutionPipeline` 调用。外部化对工具透明：它们照常返回完整结果。管道决定什么进入历史记录。
 
-Temporary files are stored in `.obsidian-agent/tmp/{taskId}/` with deterministic names (`{toolName}-{callIndex}.md`). No timestamps, no random values, so file paths don't invalidate the KV cache. Cleanup happens after task completion, with a safety sweep on plugin startup for orphaned directories older than one hour.
+临时文件存储在 `.obsidian-agent/tmp/{taskId}/` 中，具有确定性名称（`{toolName}-{callIndex}.md`）。没有时间戳，没有随机值，因此文件路径不会使 KV 缓存失效。清理在任务完成后进行，并在插件启动时对超过一小时孤立目录进行安全扫描。
 
-During fast path execution, externalization is disabled. The final LLM call needs full content for a good summary, and with only two to three iterations the accumulation is minimal.
+在快速路径执行期间，外部化被禁用。最后的 LLM 调用需要完整内容以进行良好的摘要，而且由于只有两到三次迭代，积累很小。
 
-The history stays strictly append-only. Externalization happens at result creation time, never retroactively. KV caching and context condensing share this principle: none of them work if the history gets modified after the fact.
+历史记录严格保持仅追加原则。外部化在结果创建时发生，而不是追溯性地进行。KV 缓存和上下文压缩共享这一原则：如果历史记录事后被修改，它们都无法工作。
 
-## Safety rails
+## 安全护栏
 
-The loop has several mechanisms to prevent runaway behavior.
+循环有多重机制防止失控行为。
 
-Iteration limits: a soft limit at 60% of `maxIterations` and a hard limit at `maxIterations` (default 25). At the soft limit, the agent receives a warning to wrap up. At the hard limit, the loop terminates unconditionally.
+迭代限制：软限制在 `maxIterations` 的 60%，硬限制在 `maxIterations`（默认 25）。在软限制时，agent 会收到完成警告。在硬限制时，循环无条件终止。
 
-Consecutive mistake tracking: every tool error increments a counter. A successful call resets it to zero. If the counter reaches `consecutiveMistakeLimit`, the loop aborts. This stops the agent from burning tokens on a broken approach.
+连续错误追踪：每次工具错误都会增加计数器。成功的调用将其重置为零。如果计数器达到 `consecutiveMistakeLimit`，循环中止。这可以阻止 agent 在一个错误方法上消耗 token。
 
-Tool repetition detection: `ToolRepetitionDetector` keeps a sliding window of the last 15 tool calls. If the same tool with identical input appears 3 or more times, it gets blocked. For search tools, the detector also catches semantically similar queries using Jaccard similarity. Blocked calls return recoverable errors so the agent can try something different.
+工具重复检测：`ToolRepetitionDetector` 保持最近 15 次工具调用的滑动窗口。如果相同的工具以相同输入出现 3 次或更多次，它会被阻止。对于搜索工具，检测器还会使用 Jaccard 相似性捕获语义上相似的查询。被阻止的调用会返回可恢复的错误，以便 agent 可以尝试其他方法。
 
-Rate limiting: when `rateLimitMs` is set, each iteration pauses for at least that many milliseconds. A simple throttle for API cost control.
+速率限制：当设置 `rateLimitMs` 时，每次迭代会暂停至少这么多个毫秒。这是一个简单的 API 成本控制节流阀。
 
-## Context condensing
+## 上下文压缩
 
-Language models have finite context windows. A long conversation with many tool calls fills up fast. Context condensing handles this.
+语言模型的上下文窗口是有限的。包含许多工具调用的长对话会很快填满。上下文压缩处理这个问题。
 
-When `condensingEnabled` is true and the estimated token count exceeds `condensingThreshold` percent of the model's context window, condensing triggers. First, `onPreCompactionFlush` fires so important facts can be persisted to memory before trimming. Then the conversation history is summarized into a compact representation that replaces the original messages.
+当 `condensingEnabled` 为真且估计的 token 数量超过模型上下文窗口的 `condensingThreshold` 百分比时，压缩触发。首先，`onPreCompactionFlush` 触发，以便重要事实可以在修剪之前持久化到记忆中。然后对话历史被总结成紧凑表示，替换原始消息。
 
-If the API returns a 400-class error indicating context overflow, emergency condensing kicks in regardless of the threshold. The threshold then resets to 80% to avoid triggering repeatedly.
+如果 API 返回表示上下文溢出的 400 类错误，无论阈值如何都会触发紧急压缩。然后阈值重置为 80% 以避免重复触发。
 
-## Power steering
+## 动力转向
 
-Models drift. In a long loop with many iterations, the agent can gradually forget its assigned role and start behaving generically. Power steering counters this.
+模型会漂移。在具有多次迭代的长循环中，agent 可能逐渐忘记其分配的角色，开始表现得泛化。动力转向对抗这一点。
 
-When `powerSteeringFrequency` is set to a value like 4, the loop injects a synthetic user message every 4 iterations. This message reminds the model of its active mode, role definition, and active skill names. It doesn't cost an extra API call; it's an additional message in the conversation history before the next iteration.
+当 `powerSteeringFrequency` 设置为诸如 4 的值时，循环每 4 次迭代注入一条合成用户消息。此消息提醒模型其活跃模式、角色定义和活跃技能名称。它不占用额外的 API 调用；它是下一次迭代之前对话历史中的附加消息。
 
-## Multi-agent: spawning child agents
+## 多 Agent：生成子 Agent
 
-The `new_task` tool lets the agent spawn a child `AgentTask` for a subtask. The child gets a fresh conversation history (no parent context leaks), its own mode, and a depth counter incremented by one. Condensing and power steering are disabled for children to keep them lean and fast.
+`new_task` 工具让 agent 为子任务生成一个子 `AgentTask`。子 agent 获得新的对话历史（无父上下文泄露）、自己的模式和深度计数器加一。为保持子 agent 精简快速，压缩和动力转向对子 agent 被禁用。
 
-The parent's approval callback is forwarded to the child, so write operations from child agents still require human approval.
+父级的审批回调被转发给子级，因此来自子 agent 的写操作仍然需要人工审批。
 
-When a child reaches `maxSubtaskDepth` (default 2), the `new_task` tool is removed from its available tools entirely, preventing unbounded recursive spawning. Token usage from children accumulates into the parent's totals for accurate cost tracking.
+当子级达到 `maxSubtaskDepth`（默认 2）时，`new_task` 工具会从其可用工具中完全移除，防止无限递归生成。来自子级的 token 使用量累积到父级的总数中以进行准确的成本追踪。
 
-## Next
+## 下一步
 
-Continue to the [tool system](./tool-system) to see how tools are registered, validated, and executed through the governance pipeline.
+继续阅读[工具系统](./tool-system)，了解工具如何通过治理管道注册、验证和执行。

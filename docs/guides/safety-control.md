@@ -1,147 +1,147 @@
 ---
-title: Safety & Control
-description: Permissions, checkpoints, approvals, and the audit log. How to stay in control of what Obsilo does.
+title: 安全与控制
+description: 权限、检查点、审批和审计日志。了解如何掌控 Obsilo 的操作。
 ---
 
-# Safety & Control
+# 安全与控制
 
-Nothing changes in your vault without your knowledge.
+您的保险库中没有任何更改会在您不知情的情况下发生。
 
-## The approval system
+## 审批系统
 
-Obsilo is fail-closed by default. It asks before any action that modifies your vault. Every write, edit, delete, or external call triggers an approval card in the chat.
+Obsilo 默认是"故障关闭"模式。在执行任何会修改保险库的操作之前，它都会先请求您的许可。每一次写入、编辑、删除或外部调用都会在聊天中触发一张审批卡片。
 
-### What an approval card shows
+### 审批卡片显示的内容
 
-When Obsilo wants to do something, a card appears with:
+当 Obsilo 要执行某项操作时，会显示一张卡片，包含：
 
-- **Write a file:** the full content that will be written
-- **Edit a file:** a diff showing what changes (lines added and removed)
-- **Delete a file:** which file will be removed
-- **Move/rename:** source and destination paths
+- **写入文件：** 将要写入的完整内容
+- **编辑文件：** 显示变更内容的差异（新增和删除的行）
+- **删除文件：** 将被删除的文件
+- **移动/重命名：** 源路径和目标路径
 
-You can Allow once (approve this specific action) or Always allow (auto-approve this category from now on).
+您可以选择"仅允许一次"（批准此次特定操作）或"始终允许"（从现在起自动批准此类操作）。
 
-## Permission categories
+## 权限类别
 
-You can enable auto-approve per category. Go to **Settings > Obsilo Agent > Permissions** to see the full list:
+您可以按类别启用自动批准。进入 **设置 > Obsilo Agent > 权限** 查看完整列表：
 
-| Category | What it covers | Risk level |
+| 类别 | 涵盖范围 | 风险等级 |
 |----------|---------------|-----------|
-| **Read operations** | Reading files, listing folders, searching | Low (nothing changes) |
-| **Note edits** | Editing existing Markdown notes | Medium (changes your content) |
-| **Vault changes** | Creating, moving, or deleting files and folders | Medium-High (structural changes) |
-| **Web operations** | Fetching web pages, searching the internet | Low-Medium (external data access) |
-| **MCP calls** | Calling external tools via the Model Context Protocol | Medium (depends on the tool) |
-| **Subtasks** | Spawning background sub-agents | Low (inherits parent permissions) |
-| **Plugin skills** | Running built-in skill workflows | Low (guided multi-step tasks) |
-| **Plugin API reads** | Reading Obsidian plugin data | Low (read-only) |
-| **Plugin API writes** | Modifying Obsidian plugin settings | High (can change app behavior) |
-| **Recipes** | Running multi-step automated workflows | High (many actions in sequence) |
-| **Sandbox** | Executing code in the isolated sandbox | High (runs generated code) |
+| **读取操作** | 读取文件、列出文件夹、搜索 | 低（不会改变任何内容） |
+| **笔记编辑** | 编辑现有的 Markdown 笔记 | 中（会改变您的内容） |
+| **保险库变更** | 创建、移动或删除文件和文件夹 | 中高（结构性变更） |
+| **网络操作** | 获取网页、搜索互联网 | 中低（访问外部数据） |
+| **MCP 调用** | 通过模型上下文协议调用外部工具 | 中（取决于具体工具） |
+| **子任务** | 生成后台子代理 | 低（继承父级权限） |
+| **插件技能** | 运行内置技能工作流 | 低（引导式多步骤任务） |
+| **插件 API 读取** | 读取 Obsidian 插件数据 | 低（只读） |
+| **插件 API 写入** | 修改 Obsidian 插件设置 | 高（可改变应用行为） |
+| **配方** | 运行多步骤自动化工作流 | 高（连续执行多个操作） |
+| **沙盒** | 在隔离沙盒中执行代码 | 高（运行生成的代码） |
 
-:::warning Permissive mode
-If you auto-approve both web operations and note edits (or vault changes), Obsilo shows a security warning. This combination means the agent could fetch content from the internet and write it to your vault without asking.
+:::warning 宽松模式
+如果您同时开启了网络操作和笔记编辑（或保险库变更）的自动批准，Obsilo 会显示安全警告。这种组合意味着代理可以在不询问的情况下从互联网获取内容并写入您的保险库。
 :::
 
-## Reviewing changes
+## 审查变更
 
-### The approval card
+### 审批卡片
 
-Before any write operation, an approval card appears in the chat. For file edits, it shows a color-coded diff with a badge like `+3 / -1` indicating lines added and removed. Read the diff before approving.
+在任何写入操作之前，审批卡片会出现在聊天中。对于文件编辑，它会显示带颜色编码的差异，并带有诸如 `+3 / -1` 的徽章，指示新增和删除的行。在批准之前请先阅读差异。
 
-### The diff review modal
+### 差异审查模态框
 
-After a task completes, you can review all changes at once:
+任务完成后，您可以一次性审查所有变更：
 
-1. The undo bar appears below the last message
-2. Click "Review changes" to open the diff review modal
-3. For each file, you see every change grouped by section (headings, paragraphs, code blocks)
-4. Decide per section: Keep, Undo, or Edit (modify the change manually)
+1. 撤销栏出现在最后一条消息下方
+2. 点击"审查变更"打开差异审查模态框
+3. 对于每个文件，您可以看到按部分（标题、段落、代码块）分组的每项变更
+4. 每个部分可单独决定：保留、撤销或编辑（手动修改变更）
 
-This gives you fine-grained control: keep most of a task's work while reverting one specific paragraph.
+这为您提供了细粒度的控制：保留任务的大部分工作，同时撤销某个特定的段落。
 
-## Checkpoints and undo
+## 检查点和撤销
 
-Obsilo creates a checkpoint before the first modification to any file in a task. Checkpoints are stored in a shadow repository (using isomorphic-git) that does not interfere with your own git history.
+Obsilo 会在任务中首次修改任何文件之前创建一个检查点。检查点存储在影子仓库中（使用 isomorphic-git），不会干扰您自己的 git 历史记录。
 
-### The undo bar
+### 撤销栏
 
-After every task that modified files, an undo bar appears:
+在每个修改了文件的任务之后，会出现撤销栏：
 
-- **"Undo all changes":** restores every file to its pre-task state with one click
-- **"Review changes":** opens the diff review modal for per-file decisions
+- **"撤销所有变更"：** 一键将每个文件恢复到任务前的状态
+- **"审查变更"：** 打开差异审查模态框进行逐文件决策
 
-:::tip Undo is always available
-Even if you auto-approve everything, the checkpoint system records the state before changes. You can always undo after the fact.
+:::tip 撤销始终可用
+即使您开启了所有操作的自动批准，检查点系统也会记录变更前的状态。您始终可以在事后执行撤销。
 :::
 
-### How checkpoints work
+### 检查点如何工作
 
-1. Obsilo snapshots each file before its first modification in a task
-2. The snapshot is stored as a git commit in the shadow repository
-3. If you undo, the original content is restored from the snapshot
-4. Files that were newly created (did not exist before the task) are deleted on undo
+1. Obsilo 在任务中首次修改每个文件之前对其进行快照
+2. 快照存储为影子仓库中的 git 提交
+3. 如果您执行撤销，原始内容从快照中恢复
+4. 在任务中新建的文件（在任务前不存在的文件）在撤销时会被删除
 
-Checkpoints are automatic. You do not need to configure anything.
+检查点是自动创建的。无需进行任何配置。
 
-## The operation log
+## 操作日志
 
-Every tool call is recorded in a daily audit log file.
+每次工具调用都会记录在每日审计日志文件中。
 
-Each entry records:
-- Timestamp
-- Tool name and parameters (sensitive values like API keys are redacted)
-- Success or failure
-- Duration
+每条记录包含：
+- 时间戳
+- 工具名称和参数（敏感值如 API 密钥会被编辑）
+- 成功或失败
+- 持续时间
 
-**Location:** JSONL files (one per day) in your plugin directory under `logs/`, named by date (e.g. `2026-03-31.jsonl`).
+**位置：** JSONL 文件（每天一个）位于插件目录下的 `logs/` 中，按日期命名（例如 `2026-03-31.jsonl`）。
 
-**Retention:** Logs are kept for 30 days, then automatically deleted. Browse recent logs in **Settings > Obsilo Agent > Log**.
+**保留期：** 日志保留 30 天，然后自动删除。在 **设置 > Obsilo Agent > 日志** 中浏览最近的日志。
 
-:::info No file content in logs
-The operation log records that a file was read or written, but not the full content. It logs file path and content length, not the actual text.
+:::info 日志中不记录文件内容
+操作日志记录文件被读取或写入，但不记录完整内容。它记录文件路径和内容长度，不记录实际文本。
 :::
 
-## The ignore file
+## 忽略文件
 
-Create `.obsidian-agentignore` in your vault root to define paths the agent should never access. Same syntax as `.gitignore`:
+在保险库根目录创建 `.obsidian-agentignore` 来定义代理永不访问的路径。语法与 `.gitignore` 相同：
 
 ```
-# Private journal -- agent cannot read or modify these
+# 私人日记 -- 代理无法读取或修改
 journal/
 diary-*.md
 
-# Credentials and sensitive files
+# 凭据和敏感文件
 secrets/
 *.env
 ```
 
-There is also `.obsidian-agentprotected` for files the agent can read but never write:
+还有 `.obsidian-agentprotected` 用于代理可以读取但永不写入的文件：
 
 ```
-# Templates -- agent can reference but not modify
+# 模板 -- 代理可以引用但不能修改
 templates/
 ```
 
-Both files are protected. The agent cannot modify or delete them.
+这两个文件都受保护。代理无法修改或删除它们。
 
-:::tip Always-blocked paths
-Obsilo never accesses `.git/`, the Obsidian workspace cache, or internal config files, regardless of your configuration.
+:::tip 始终阻止的路径
+无论您的配置如何，Obsilo 永远不会访问 `.git/`、Obsidian 工作区缓存或内部配置文件。
 :::
 
-## Best practices
+## 最佳实践
 
-1. Start with approvals on. Leave auto-approve disabled until you are comfortable with how Obsilo works. Watch the approval cards to learn what the agent does.
+1. 从开启审批开始。在您熟悉 Obsilo 的工作方式之前，保持自动批准关闭。观察审批卡片以了解代理的执行操作。
 
-2. Enable categories gradually. Auto-approve reads first (low risk), then note edits after you trust the agent's judgment. Keep vault changes and sandbox on manual approval longer.
+2. 逐步启用类别。先自动批准读取操作（低风险），在您信任代理的判断后再开启笔记编辑。让保险库变更和沙盒保持手动批准更长时间。
 
-3. Avoid the permissive combination. Do not auto-approve web operations and writes at the same time unless you fully trust the content sources.
+3. 避免宽松组合。除非您完全信任内容来源，否则不要同时自动批准网络操作和写入操作。
 
-4. Use the ignore file. If you have sensitive notes (financial records, medical info, private journals), add them to `.obsidian-agentignore` before giving the agent broad permissions.
+4. 使用忽略文件。如果您有敏感笔记（财务记录、医疗信息、私人日记），在授予代理广泛权限之前将其添加到 `.obsidian-agentignore`。
 
-5. Review the operation log periodically. A quick scan of recent logs shows what the agent has been doing and catches anything unexpected.
+5. 定期审查操作日志。快速浏览最近的日志可以了解代理一直在做什么，并发现任何异常情况。
 
-6. Back up your vault. Checkpoints provide undo within Obsilo, but a proper vault backup (Obsidian Sync, git, or file-system backup) protects against everything.
+6. 备份您的保险库。检查点提供 Obsilo 内的撤销功能，但适当的保险库备份（Obsidian Sync、git 或文件系统备份）可以防止所有意外情况。
 
-7. Use Ask mode for exploration. When you just want answers without changes, switch to Ask mode. It is read-only, so nothing in your vault can be modified.
+7. 使用"提问"模式进行探索。当您只想获取答案而不希望发生变更时，切换到"提问"模式。它是只读的，因此您的保险库中不会有任何内容被修改。

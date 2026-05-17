@@ -1,72 +1,72 @@
 ---
-title: Modes
-description: How modes control the agent's personality, available tools, and behavior.
+title: 模式
+description: 模式如何控制智能体的人格、可用工具和行为。
 ---
 
-# Modes
+# 模式
 
-A mode defines what the agent can do and how it talks. Each mode has a name, a role definition, a set of tool groups, and optional custom instructions. Switch modes, and the agent's capabilities change immediately.
+模式定义了智能体能做什么以及如何对话。每个模式都有名称、角色定义、工具组合和可选的自定义指令。切换模式后，智能体的能力会立即改变。
 
-## Two built-in modes
+## 两个内置模式
 
-Ask is read-only. Tool groups: `read`, `vault`, `agent`. The agent can search, read files, answer questions, and explore the vault. It cannot create, edit, move, or delete anything. When the user asks for a write operation, the agent calls `switch_mode` to escalate to Agent mode.
+Ask（问答模式）是只读的。工具组合：`read`、`vault`、`agent`。智能体可以搜索、读取文件、回答问题和浏览知识库，但无法创建、编辑、移动或删除任何内容。当用户请求写操作时，智能体会调用 `switch_mode` 来升级到 Agent 模式。
 
-Agent has full access. Tool groups: `read`, `vault`, `edit`, `web`, `agent`, `mcp`, `skill`. It can do everything Ask can, plus write files, browse the web, spawn sub-agents, call MCP servers, and run plugin commands.
+Agent（代理模式）拥有完全访问权限。工具组合：`read`、`vault`、`edit`、`web`、`agent`、`mcp`、`skill`。它可以完成 Ask 模式的所有功能，还可以写文件、浏览网页、生成子智能体、调用 MCP 服务器和运行插件命令。
 
-These two modes are defined in `src/core/modes/builtinModes.ts`.
+这两个模式定义在 `src/core/modes/builtinModes.ts` 中。
 
-## Custom modes
+## 自定义模式
 
-You can create your own modes beyond Ask and Agent. A custom mode has a slug, a display name, a role definition, one or more tool groups, and optional custom instructions.
+除了 Ask 和 Agent 模式外，你还可以创建自己的模式。自定义模式包含标识符、显示名称、角色定义、一个或多个工具组合，以及可选的自定义指令。
 
-Custom modes are stored at two levels:
+自定义模式存储在两个级别：
 
-- Global: in `~/.obsidian-agent/modes.json`, available across all vaults. Managed by `GlobalModeStore` (`src/core/modes/GlobalModeStore.ts`).
-- Vault-local: in the plugin's settings for a specific vault. Scoped to that vault only.
+- 全局级别：位于 `~/.obsidian-agent/modes.json`，在所有保险库中可用。由 `GlobalModeStore`（`src/core/modes/GlobalModeStore.ts`）管理。
+- 保险库本地级别：位于插件的特定保险库设置中，仅在该保险库中生效。
 
-If a vault-local mode has the same slug as a built-in, the vault version replaces the built-in. This lets you customize the default behavior without losing the originals.
+如果保险库本地模式的标识符与内置模式相同，则保险库版本将替换内置模式。这让你可以在不丢失原始模式的情况下自定义默认行为。
 
-## How tool filtering works
+## 工具过滤的工作原理
 
-Each mode declares which tool groups it uses. The `ModeService` (`src/core/modes/ModeService.ts`) expands those groups into individual tool names and passes only those tools to the LLM in the API request.
+每个模式都声明它使用哪些工具组。`ModeService`（`src/core/modes/ModeService.ts`）将这些组展开为单独的工具名称，并在 API 请求中仅向 LLM 传递这些工具。
 
 ```mermaid
 flowchart LR
-    A[Mode config: toolGroups] --> B[expandToolGroups]
-    B --> C[Filtered tool definitions]
-    C --> D[LLM sees only these tools]
+    A[模式配置：toolGroups] --> B[expandToolGroups]
+    B --> C[过滤后的工具定义]
+    C --> D[LLM 只能看到这些工具]
 ```
 
-The model cannot call a tool it does not see. If your custom mode enables only `read` and `vault`, the model has no write tools in its schema. This is not a runtime check. The tools are simply absent from the request.
+模型无法调用它看不到的工具。如果你的自定义模式只启用了 `read` 和 `vault`，那么模型的架构中就没有写操作工具。这不是运行时检查——这些工具只是不存在于请求中。
 
-Users can further restrict tools within a mode through `setModeToolOverride()`. Overrides can only remove tools, never add ones outside the mode's groups. You can narrow access but not escalate it.
+用户可以通过 `setModeToolOverride()` 在模式内进一步限制工具。覆盖只能移除工具，不能添加模式组之外的工具。你可以缩小访问权限，但不能提升权限。
 
-Web tools have an extra gate: when `webTools.enabled` is false, `web_fetch` and `web_search` are stripped from every mode's tool set, regardless of configuration.
+Web 工具还有一个额外的限制：当 `webTools.enabled` 为 false 时，`web_fetch` 和 `web_search` 会从每个模式的工具集中移除，无论配置如何。
 
-## Mode switching
+## 模式切换
 
-The agent or the user can switch modes mid-conversation. The `switch_mode` tool persists the new active mode and triggers a system prompt rebuild. Tool definitions are re-filtered for the new mode, so the next iteration sees a different set of capabilities.
+智能体或用户可以在对话中途切换模式。`switch_mode` 工具会保存新的激活模式并触发系统提示重建。工具定义会针对新模式重新过滤，因此下一次迭代会看到不同的能力集。
 
-Ask mode uses this for escalation. When someone asks "create a note about X," the agent recognizes it cannot write and calls `switch_mode('agent')` to hand off.
+Ask 模式使用此机制进行升级。当有人请求"创建一个关于 X 的笔记"时，智能体识别到自己无法写操作，便调用 `switch_mode('agent')` 进行交接。
 
-## Multi-agent mode propagation
+## 多智能体模式传播
 
-When a parent agent spawns a subtask via `new_task`, it specifies which mode the child runs in. The child inherits mode restrictions from the parent. A common pattern: Agent mode spawns an Ask-mode subtask for research, keeping the child read-only while the parent handles writes.
+当父智能体通过 `new_task` 生成子任务时，它会指定子任务运行的模式。子任务继承父任务的模式限制。一个常见模式：Agent 模式生成一个 Ask 模式的子任务进行研究，使子任务保持只读状态，而父任务负责写操作。
 
-The child cannot escalate beyond its assigned mode. If it was given Ask, it stays in Ask.
+子任务无法超出其分配的模式进行升级。如果它被分配了 Ask 模式，它就会保持在 Ask 模式。
 
 ## ModeConfig
 
-Each mode is a `ModeConfig` object with these fields:
+每个模式都是一个 `ModeConfig` 对象，包含以下字段：
 
-| Field | Purpose |
+| 字段 | 用途 |
 |-------|---------|
-| `slug` | Unique identifier (e.g., `ask`, `agent`, `researcher`) |
-| `name` | Display name in the UI |
-| `toolGroups` | Which tool groups the mode can access |
-| `roleDefinition` | Injected into the [system prompt](/concepts/system-prompt) as the mode's identity |
-| `customInstructions` | Extra instructions appended to the system prompt |
-| `whenToUse` | Description of when this mode is appropriate |
-| `source` | `built-in`, `global`, or `vault` |
+| `slug` | 唯一标识符（如 `ask`、`agent`、`researcher`） |
+| `name` | UI 中的显示名称 |
+| `toolGroups` | 模式可以访问的工具组 |
+| `roleDefinition` | 作为模式身份注入到[系统提示](/concepts/system-prompt)中 |
+| `customInstructions` | 附加到系统提示的额外指令 |
+| `whenToUse` | 描述何时适合使用此模式 |
+| `source` | `built-in`、`global` 或 `vault` |
 
-The `ModeService` resolves the active mode by checking sources in order: built-in, then global, then vault-local. It falls back to Ask if the saved slug no longer exists.
+`ModeService` 按以下顺序检查来源来解析激活的模式：内置模式、然后全局模式、然后保险库本地模式。如果保存的标识符不再存在，则回退到 Ask 模式。

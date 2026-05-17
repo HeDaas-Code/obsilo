@@ -1,81 +1,63 @@
 ---
-title: Installation & Quick Start
-description: Install Obsilo and start your first conversation in under 3 minutes.
+title: 安装与快速开始
+description: 在 3 分钟内安装 Obsilo 并开始第一次对话。
 ---
 
-# Installation & quick start
+# 安装与快速开始
 
-Get Obsilo running in your Obsidian vault in under 3 minutes.
+在 3 分钟内让 Obsilo 运行在你的 Obsidian 知识库中。
 
-## Install the plugin
+## 安装插件
 
-1. Open **Obsidian Settings** > **Community Plugins** > **Browse**
-2. Search for **"Obsilo Agent"**
-3. Click **Install**, then **Enable**
+1. 打开 **Obsidian 设置** > **社区插件**
+2. 如果还没启用社区插件，点击「**已关闭**」切换为「**已开启**」
+3. 在「社区插件」搜索框中输入 `Obsilo`
+4. 找到 **Obsilo Agent**，点击「**安装**」
+5. 安装完成后，点击「**启用**」
 
-The Obsilo icon appears in the left sidebar.
+## 首次配置
 
-:::tip BRAT (Beta Testing)
-For the latest beta version, install via [BRAT](https://github.com/TfTHacker/obsidian42-brat): Add `pssah4/obsilo` as a beta plugin.
-:::
+1. 打开侧边栏：点击左侧边栏的 Obsilo 图标，或使用快捷键 `Ctrl/Cmd + P` 输入 `Obsilo`
+2. 在设置中添加你的第一个 AI 模型（见下方）
+3. 选择一个适合的模型作为默认模型
 
-## Add your first model
+## 添加 AI 模型
 
-Obsilo needs an AI model to work. Open **Settings > Obsilo Agent > Models** and click **"+ add model"**.
+Obsilo 支持多个 AI 提供商。如果没有特别偏好的话，推荐按以下步骤配置：
 
-### Free option (no credit card)
+### Anthropic（推荐，质量最佳）
 
-1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
-2. Sign in and click **"Create API Key"**
-3. Copy the key and paste it into Obsilo
+1. 访问 [console.anthropic.com](https://console.anthropic.com) 注册账号
+2. 进入 **API Keys**，创建一个新密钥
+3. 在 Obsilo 设置中，选择 **Anthropic** 作为提供商
+4. 粘贴你的 API 密钥，选择一个模型（推荐 **Claude Sonnet 4**）
+5. 点击「**测试连接**」确认配置正常
 
-Google Gemini has a free tier with reasonable rate limits. Good enough to try everything out.
+### OpenAI（支持语义搜索嵌入）
 
-### Best quality
+1. 访问 [platform.openai.com](https://platform.openai.com) 注册账号
+2. 进入 **API Keys**，生成一个新密钥
+3. 在 Obsilo 设置中，选择 **OpenAI** 作为提供商
+4. 粘贴密钥并选择一个模型（推荐 **GPT-4o**）
+5. 测试连接确认正常
 
-| Provider | Model | Strengths |
-|----------|-------|-----------|
-| Anthropic | Claude Sonnet 4.6 | Best overall quality, excellent tool use |
-| OpenAI | GPT-4o | Fast, good at structured output |
-| Google | Gemini 2.5 Pro | Free tier, large context window |
+### Ollama（本地运行，完全免费）
 
-### Local & private
+1. 从 [ollama.ai](https://ollama.ai) 下载安装 Ollama
+2. 拉取一个模型：`ollama pull qwen2.5:7b`
+3. 在 Obsilo 中选择 **Ollama** 作为提供商
+4. 无需 API 密钥，模型列表会自动检测已运行的模型
 
-If you want no data leaving your machine, run a model locally:
+## 开始对话
 
-- Install [Ollama](https://ollama.ai), then run `ollama pull llama3.2`
-- Or download [LM Studio](https://lmstudio.ai), install a model, and start the server
+配置好模型后，在 Obsilo 侧边栏的输入框中输入你的第一个问题：
 
-:::info No lock-in
-Obsilo supports 10+ providers. You can switch models anytime, even mid-conversation. Configure multiple models and pick the right one for each task.
-:::
+- 「查看我的知识库中有哪些笔记」
+- 「帮我整理一下最近修改过的文件」
+- 「找找关于 [某个主题] 的笔记」
 
-## Your first chat
+## 下一步
 
-1. Click the **Obsilo icon** in the left sidebar
-2. Type a message and press **Enter**
-3. Watch the agent work. It shows every tool call in real time
-
-### Try these prompts
-
-- *"What notes do I have about [any topic]?"*
-- *"Summarize the note I'm currently viewing"*
-- *"Create a new note with a summary of my last 3 daily notes"*
-- *"Find all notes tagged with #project and create a canvas showing their connections"*
-
-## What happens behind the scenes
-
-When you send a message, Obsilo:
-
-1. Reads your message and decides which tools to use
-2. Calls tools (read files, search, write), and you see each call in the activity block
-3. Asks for your approval before any write operation (unless you enable auto-approve)
-4. Returns a response with the result
-
-Every write operation creates a checkpoint. You can undo any change with one click.
-
-## Next steps
-
-- [Your first conversation](/tutorials/first-conversation): Learn about modes, context, and how the agent thinks
-- [Choosing a model](/guides/choosing-a-model): Find the best model for your workflow
-- [Safety & control](/guides/safety-control): Understand permissions and checkpoints
+- 了解 Obsilo 能做什么：[功能介绍](../guides/capabilities)
+- 了解 Agent 模式与 Ask 模式的区别：[模式系统](../concepts/mode-system)
+- 学习更多用法：[首次对话教程](./first-conversation)

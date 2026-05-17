@@ -1,135 +1,92 @@
 ---
-title: Chat Interface
-description: Attachments, @-mentions, tool picker, chat history, and keyboard shortcuts.
+title: 聊天界面
+description: Obsilo 侧边栏的使用方法，包括消息输入、文件附加、上下文显示和历史记录。
 ---
 
-# Chat Interface
+# 聊天界面
 
-The Obsilo sidebar is where you talk to the agent, attach files, browse past conversations, and watch the agent work in real time.
+Obsilo 侧边栏是你与 Agent 交流的地方。你可以输入消息、附加文件、浏览历史对话，以及实时观察 Agent 的工作过程。
 
-## The chat panel
+## 侧边栏布局
 
-Open Obsilo by clicking its icon in the left sidebar. The panel has three areas:
+```
+┌─────────────────────────────┐
+│  [模式选择] [模型选择] [⚙]   │  ← 顶部工具栏
+├─────────────────────────────┤
+│                             │
+│  对话区域                    │  ← 显示消息和工具执行结果
+│  （消息气泡、工具调用卡片）   │
+│                             │
+├─────────────────────────────┤
+│  📎 | [输入框...]  [发送]   │  ← 底部输入区
+│  [📎 附加文件] [⏹ 停止]     │
+└─────────────────────────────┘
+```
 
-- Toolbar at the top: mode selector, model picker, and the history button
-- Message area in the center: your conversation, activity blocks, and approval cards
-- Input bar at the bottom: text field, attachment button, and send button
+## 消息输入
 
-## Sending messages
+在底部输入框中输入你的请求，按 `Enter` 发送。如果你想输入多行内容，先用 `Shift + Enter` 换行，然后按 `Ctrl/Cmd + Enter` 发送。
 
-Type your message and press **Enter** to send. For multi-line messages, press **Shift+Enter** to add a new line.
+发送后，你会看到：
+- 你的消息显示为气泡
+- Agent 显示「思考中」状态
+- 然后是它的回复和任何工具调用
 
-:::tip Configurable send key
-In **Settings > Obsilo Agent > Interface** you can change the send shortcut to **Ctrl+Enter** (or **Cmd+Enter** on Mac) if you prefer Enter for new lines.
-:::
+## 文件附加
 
-## Attachments
+点击 📎 图标或直接拖拽文件到输入框，可以附加文件。Obsilo 支持：
 
-You can attach files to give the agent additional context:
+- **Markdown 文件** — 附加后 Agent 可以读取内容作为上下文
+- **Office 文件** — PPTX、DOCX、XLSX、PDF，会自动解析提取文本
+- **图片** — PNG、JPG、GIF、WebP
+- **数据文件** — JSON、CSV、XML
 
-- Drag and drop a file from your desktop or file manager onto the chat input
-- Paste from clipboard (screenshots and copied images are added automatically)
-- Click the paperclip icon next to the input field to browse your files
+## 工具调用展示
 
-### Supported file types
+当 Agent 调用工具时，你会看到一个工具卡片，显示：
 
-| Type | Examples | Notes |
-|------|----------|-------|
-| Images | PNG, JPG, GIF, WebP | The agent can see and describe image content |
-| Office documents | PPTX, DOCX, XLSX | Content is extracted and added as context |
-| PDF | Any PDF file | Text is extracted for the agent to read |
-| Text files | Markdown, TXT, CSV, JSON | Added as plain text context |
+- 工具名称和描述
+- 传入的参数
+- 执行结果预览
 
-:::warning 50 MB Limit
-Each attachment can be up to 50 MB. Very large files may use a significant portion of the model's context window, leaving less room for conversation.
-:::
+对于需要批准的操作，会显示审批提示，你需要点击「批准」或「拒绝」。
 
-## @-Mentions
+## 上下文徽章
 
-Type **@** in the input field to search your vault by file name. A dropdown appears as you type, showing matching notes. Select a file to attach it as context.
+在工具栏右侧有一个上下文徽章，显示当前对话的上下文窗口使用情况。绿色表示充足，黄色表示接近上限，红色表示即将触发上下文压缩。
 
-Fastest way to point the agent at a specific note without leaving the chat.
+## 历史记录
 
-**Example:** *"Summarize @meeting-notes-march and compare the action items with @project-roadmap"*
+点击侧边栏顶部的历史图标可以打开对话历史面板。你可以：
 
-## Workflow and prompt picker
+- 浏览所有保存过的对话
+- 搜索特定对话
+- 加载历史对话继续进行
+- 删除不需要的对话
 
-Type **/** in the input field to open the picker. This shows:
+## Slash 命令和 @ 提及
 
-- Workflows: multi-step task templates (e.g., research a topic, reorganize a folder)
-- Support prompts: pre-written prompts for common tasks
+在输入框中输入 `/` 可以触发斜杠命令，这是预设的工作流：
 
-Select an entry to insert it into your message. You can edit the text before sending.
+- `/search [关键词]` — 搜索知识库
+- `/new` — 创建新笔记
+- `/canvas` — 创建 Canvas 可视化
 
-## Activity blocks
+输入 `@` 可以引用知识库中的笔记：
 
-When the agent works, an activity block appears below its response. It shows every tool call in real time:
+- `@[笔记名]` — 将该笔记的内容作为上下文
 
-- The tool name and key parameters (e.g., which file was read or what search query was used)
-- A result preview (click to expand and see full details)
-- Diff badges on write operations showing lines added and removed (e.g., `+12 / -3`)
+## 设置菜单
 
-Activity blocks are collapsed by default after the agent finishes. Click to expand them at any time.
+点击 ⚙ 图标可以快速访问常用设置项，包括：
 
-:::info Full transparency
-You can always see exactly what the agent did, which files it read, and what it changed.
-:::
+- 当前模式（Ask / Agent）
+- 当前模型
+- 自动审批配置
+- 打开完整设置页面
 
-## Approval cards
+## 下一步
 
-When the agent wants to perform a write operation (and auto-approve is off for that category), an approval card appears. It shows what the agent intends to do and gives you three choices:
-
-- Allow once: approve this single action
-- Always allow: auto-approve this category from now on
-- Deny: reject the action
-
-See [Safety & Control](/guides/safety-control) for details on permission categories.
-
-## The undo bar
-
-After the agent completes a task that changed files, an undo bar appears at the bottom of the conversation. Click Undo to revert all changes made during that task. Every modified file is restored from its checkpoint.
-
-The undo bar stays visible until you start a new message or dismiss it.
-
-## Chat history
-
-Obsilo saves every conversation automatically. To access your history:
-
-1. Click the history icon in the toolbar (clock symbol)
-2. Browse past conversations, each showing a title, date, and preview
-3. Click a conversation to restore it and continue where you left off
-
-Conversations are titled automatically based on their content. You can also find linked conversations directly from your notes. See [Memory & Personalization](/guides/memory-personalization) for chat-linking.
-
-## Context display and condensation
-
-At the top of the message area, a small indicator shows how much of the model's context window is in use. As conversations grow longer, Obsilo may condense earlier messages to stay within limits. When this happens:
-
-- A brief note appears in the conversation
-- Key facts and decisions are preserved
-- Older tool call details may be summarized
-
-This happens automatically and keeps long conversations running.
-
-## Keyboard shortcuts
-
-| Shortcut | Action |
-|----------|--------|
-| `Enter` | Send message (configurable) |
-| `Shift+Enter` | New line in input |
-| `@` | Open file mention picker |
-| `/` | Open workflow/prompt picker |
-| `Escape` | Close picker or cancel current input |
-
-## Tips
-
-1. Attach relevant files rather than pasting long text into the message. Attachments are handled more efficiently.
-2. Use @-mentions when you know which note you need. Faster and more precise than asking the agent to search.
-3. Check activity blocks after the agent works. They help you learn what tools are available and how the agent approaches tasks.
-4. Start a new conversation for unrelated topics. Keeps context focused and avoids condensation.
-
-## Next steps
-
-- [Vault Operations](/guides/vault-operations): What the agent can do with your files
-- [Knowledge Discovery](/guides/knowledge-discovery): Set up semantic search for better results
-- [Safety & Control](/guides/safety-control): Permissions, checkpoints, and the audit log
+- [选择合适的模型](../guides/choosing-a-model) — 如何选择适合你工作流程的 AI 模型
+- [安全与控制](../guides/safety-control) — 审批系统详解
+- [知识发现](../guides/knowledge-discovery) — 如何用语义搜索发现知识库内容

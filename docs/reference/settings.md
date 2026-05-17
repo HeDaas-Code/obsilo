@@ -1,199 +1,199 @@
 ---
-title: Settings Reference
-description: Every Obsilo setting explained, organized by tab with defaults and recommendations.
+title: 设置参考
+description: 详细解释 Obsilo 的所有设置，按选项卡组织，包含默认值和建议。
 ---
 
-# Settings reference
+# 设置参考
 
-All Obsilo settings are in **Obsidian Settings > Obsilo Agent**. This page documents every section.
+所有 Obsilo 设置位于 **Obsidian 设置 > Obsilo Agent**。本页记录每个部分。
 
-## Models
+## 模型
 
-Configure AI models and providers. You can add multiple models and switch between them.
+配置 AI 模型和提供商。您可以添加多个模型并在它们之间切换。
 
-| Setting | What it does | Default | Recommendation |
+| 设置 | 功能 | 默认值 | 建议 |
 |---------|-------------|---------|----------------|
-| Model list | All configured models with provider, name, and status | Empty | Add at least one model to start |
-| Active model | The model used for conversations | First added | Use a capable model (Claude Sonnet, GPT-4o) |
-| + add model | Opens the model configuration dialog | -- | Start with one cloud + one local model |
-| Import from code | Import model configurations shared as code snippets | -- | Useful for team setups |
-| Test connection | Verify that a model's API key and endpoint work | -- | Always test after adding a new model |
+| 模型列表 | 所有已配置的模型，包含提供商、名称和状态 | 空 | 添加至少一个模型以开始使用 |
+| 当前模型 | 用于对话的模型 | 第一个添加的模型 | 使用能力强的模型（Claude Sonnet、GPT-4o） |
+| + 添加模型 | 打开模型配置对话框 | -- | 从一个云端模型 + 一个本地模型开始 |
+| 从代码导入 | 导入以代码片段形式分享的模型配置 | -- | 对团队设置有用 |
+| 测试连接 | 验证模型的 API 密钥和端点是否可用 | -- | 添加新模型后务必测试 |
 
-:::tip Multiple models
-Add several models and assign them to different modes. Use a fast/cheap model for Ask mode and a powerful one for Agent mode.
+:::tip 多个模型
+添加多个模型并将它们分配给不同的模式。使用快速/便宜的模型用于"问答"模式，强大的模型用于"代理"模式。
 :::
 
-## Embeddings
+## 嵌入
 
-Configure the semantic index for meaning-based vault search.
+配置用于基于语义的保险库搜索的语义索引。
 
-| Setting | What it does | Default | Recommendation |
+| 设置 | 功能 | 默认值 | 建议 |
 |---------|-------------|---------|----------------|
-| Embedding model | The model used to generate text embeddings | None | OpenAI `text-embedding-3-small` (cheapest) |
-| API key | Separate key for the embedding provider | None | Can share the OpenAI key from Models |
-| Auto-index | Automatically index notes when they change | Off | Enable for vaults under 5,000 notes |
-| Rebuild index | Re-index the entire vault from scratch | -- | Run after first setup or major vault changes |
-| Reranking | Re-rank semantic search results for better relevance | Off | Enable if search results feel imprecise |
-| Implicit connections | Discover hidden relationships between notes | Off | Enable for knowledge discovery use cases |
-| Graph enrichment | Add semantic similarity data to the Obsidian graph | Off | Enable if you use the graph view heavily |
+| 嵌入模型 | 用于生成文本嵌入的模型 | 无 | OpenAI `text-embedding-3-small`（最便宜） |
+| API 密钥 | 嵌入提供商的独立密钥 | 无 | 可与模型中的 OpenAI 密钥共用 |
+| 自动索引 | 笔记变更时自动索引 | 关闭 | 对小于 5,000 条笔记的保险库启用 |
+| 重建索引 | 从头重新索引整个保险库 | -- | 首次设置或保险库重大变更后运行 |
+| 重排序 | 重新排序语义搜索结果以提高相关性 | 关闭 | 如果搜索结果感觉不精确则启用 |
+| 隐式连接 | 发现笔记之间的隐藏关系 | 关闭 | 为知识发现用例启用 |
+| 图形增强 | 向 Obsidian 图形添加语义相似性数据 | 关闭 | 如果频繁使用图形视图则启用 |
 
-:::info Index size
-The semantic index stores embeddings locally. For a vault with 1,000 notes, expect roughly 10-20 MB of storage.
+:::info 索引大小
+语义索引在本地存储嵌入。对于包含 1,000 条笔记的保险库，预计需要大约 10-20 MB 存储空间。
 :::
 
-## Web search
+## 网络搜索
 
-Enable tools for accessing the internet.
+启用访问互联网的工具。
 
-| Setting | What it does | Default | Recommendation |
+| 设置 | 功能 | 默认值 | 建议 |
 |---------|-------------|---------|----------------|
-| Enable web tools | Allow the agent to use `web_fetch` and `web_search` | Off | Enable when you need current information |
-| Search provider | Which search API to use | Brave | Brave (free tier) or Tavily (better results) |
-| API key | Key for the selected search provider | None | Get a free key from your chosen provider |
+| 启用网络工具 | 允许代理使用 `web_fetch` 和 `web_search` | 关闭 | 需要最新信息时启用 |
+| 搜索提供商 | 使用哪个搜索 API | Brave | Brave（免费套餐）或 Tavily（更好的结果） |
+| API 密钥 | 所选搜索提供商的密钥 | 无 | 从您选择的提供商获取免费密钥 |
 
-## MCP (Model Context Protocol)
+## MCP（模型上下文协议）
 
-Connect external tool servers and expose Obsilo as a server.
+连接外部工具服务器并将 Obsilo 作为服务器暴露。
 
-| Setting | What it does | Default | Recommendation |
+| 设置 | 功能 | 默认值 | 建议 |
 |---------|-------------|---------|----------------|
-| Client servers | List of MCP servers the agent can call tools on | Empty | Add servers for external integrations |
-| + add server | Configure a new MCP server connection (SSE or streamable-http) | -- | Only SSE and streamable-http transports work |
-| Test server | Verify connectivity to a configured server | -- | Test after adding |
-| Obsilo as MCP server | Expose Obsilo's tools to external clients like Claude Desktop | Off | Enable to use Obsilo from Claude Desktop |
+| 客户端服务器 | 代理可以调用工具的 MCP 服务器列表 | 空 | 添加外部集成服务器 |
+| + 添加服务器 | 配置新的 MCP 服务器连接（SSE 或 streamable-http） | -- | 仅 SSE 和 streamable-http 传输协议有效 |
+| 测试服务器 | 验证与已配置服务器的连接 | -- | 添加后测试 |
+| Obsilo 作为 MCP 服务器 | 向 Claude Desktop 等外部客户端暴露 Obsilo 的工具 | 关闭 | 启用以从 Claude Desktop 使用 Obsilo |
 
-:::info Transport limitation
-Obsilo runs inside Electron (Obsidian's runtime), so only **SSE** and **streamable-http** transports are supported. Stdio-based MCP servers do not work.
+:::info 传输限制
+Obsilo 运行在 Electron（Obsidian 的运行时）中，因此仅支持 **SSE** 和 **streamable-http** 传输协议。基于 stdio 的 MCP 服务器无法工作。
 :::
 
-## Modes
+## 模式
 
-Configure agent modes. Each mode defines which tools, skills, and model the agent uses.
+配置代理模式。每个模式定义代理使用的工具、技能和模型。
 
-| Setting | What it does | Default | Recommendation |
+| 设置 | 功能 | 默认值 | 建议 |
 |---------|-------------|---------|----------------|
-| Ask mode | Read-only mode with only read and vault intelligence tools | Built-in | Keep as your safe exploration mode |
-| Agent mode | Full-access mode with all tools enabled | Built-in | Your primary working mode |
-| Custom modes | User-defined modes with custom tool sets and system prompts | Empty | Create modes for specific workflows (Researcher, Writer) |
-| Per-mode model | Override which model a mode uses | Global model | Set a fast model for Ask, a powerful one for Agent |
-| Per-mode tools | Select which tool groups are available in each mode | Varies by mode | Restrict tools to what the mode actually needs |
-| Per-mode skills | Attach specific skills to a mode | None | Attach relevant skills for the mode's purpose |
+| 问答模式 | 只读模式，仅包含读取和保险库智能工具 | 内置 | 保持作为安全的探索模式 |
+| 代理模式 | 启用所有工具的完全访问模式 | 内置 | 您的主要工作模式 |
+| 自定义模式 | 具有自定义工具集和系统提示的用户定义模式 | 空 | 为特定工作流程创建模式（研究员、作家） |
+| 模式级模型 | 覆盖模式使用的模型 | 全局模型 | 为问答设置快速模型，为代理设置强大模型 |
+| 模式级工具 | 选择每个模式中可用的工具组 | 因模式而异 | 将工具限制为模式实际需要的 |
+| 模式级技能 | 将特定技能附加到模式 | 无 | 附加与模式目的相关的技能 |
 
-## Permissions (auto-approve)
+## 权限（自动批准）
 
-Control what the agent can do without asking. See [Safety & Control](/guides/safety-control) for details.
+控制代理可以在不询问的情况下做什么。详见[安全与控制](/guides/safety-control)。
 
-| Setting | What it does | Default | Recommendation |
+| 设置 | 功能 | 默认值 | 建议 |
 |---------|-------------|---------|----------------|
-| Read operations | Auto-approve file reads, searches, listings | Off | Safe to enable. Nothing changes. |
-| Note edits | Auto-approve editing existing notes | Off | Enable after you trust the agent's edits |
-| Vault changes | Auto-approve creating, moving, deleting files | Off | Keep off until comfortable |
-| Web operations | Auto-approve web fetches and searches | Off | Enable if you use web tools frequently |
-| MCP calls | Auto-approve calls to external MCP servers | Off | Enable per-server based on trust |
-| Subtasks | Auto-approve spawning sub-agents | Off | Safe to enable. Inherits parent permissions. |
-| Plugin skills | Auto-approve plugin command execution | Off | Enable for trusted plugin workflows |
-| Plugin API reads | Auto-approve reading plugin data | Off | Safe to enable. Read-only. |
-| Plugin API writes | Auto-approve modifying plugin settings | Off | Keep off. High risk. |
-| Recipes | Auto-approve multi-step CLI recipes | Off | Keep off. Runs external commands. |
-| Sandbox | Auto-approve code execution in the sandbox | Off | Keep off unless you trust generated code |
+| 读取操作 | 自动批准文件读取、搜索、列表 | 关闭 | 启用是安全的。不会有任何变化。 |
+| 笔记编辑 | 自动批准编辑现有笔记 | 关闭 | 信任代理的编辑能力后启用 |
+| 保险库变更 | 自动批准创建、移动、删除文件 | 关闭 | 熟悉之前保持关闭 |
+| 网络操作 | 自动批准网络获取和搜索 | 关闭 | 频繁使用网络工具则启用 |
+| MCP 调用 | 自动批准调用外部 MCP 服务器 | 关闭 | 根据信任程度逐服务器启用 |
+| 子任务 | 自动批准生成子代理 | 关闭 | 启用是安全的。继承父权限。 |
+| 插件技能 | 自动批准插件命令执行 | 关闭 | 为可信的插件工作流程启用 |
+| 插件 API 读取 | 自动批准读取插件数据 | 关闭 | 启用是安全的。只读。 |
+| 插件 API 写入 | 自动批准修改插件设置 | 关闭 | 保持关闭。高风险。 |
+| 配方 | 自动批准多步 CLI 配方 | 关闭 | 保持关闭。运行外部命令。 |
+| 沙箱 | 自动批准在沙箱中执行代码 | 关闭 | 除非信任生成的代码，否则保持关闭 |
 
-:::warning Permissive combination
-Enabling both **web operations** and **note edits** (or vault changes) triggers a security warning. This combination lets the agent fetch internet content and write it to your vault without asking.
+:::warning 权限组合
+同时启用**网络操作**和**笔记编辑**（或保险库变更）会触发安全警告。此组合允许代理获取互联网内容并将其写入您的保险库而无需询问。
 :::
 
-## Loop (agent behavior)
+## 循环（代理行为）
 
-Control how the agent loop runs.
+控制代理循环如何运行。
 
-| Setting | What it does | Default | Recommendation |
+| 设置 | 功能 | 默认值 | 建议 |
 |---------|-------------|---------|----------------|
-| Consecutive error limit | How many consecutive tool errors before the agent stops | 3 | Keep at 3. Prevents infinite error loops. |
-| Rate limit | Minimum milliseconds between API calls | 0 | Set to 500-1000 if you hit rate limits |
-| Max iterations | Maximum tool calls per conversation turn | 25 | Increase for complex tasks, decrease to limit cost |
-| Context condensing | Summarize older messages when context gets long | On | Keep on. Prevents context overflow errors. |
-| Condensing threshold | Percentage of context window before condensing triggers | 70% | Lower if you see 400-error context overflow |
-| Power steering | Re-inject key instructions every N messages | 4 | Keep at 4 for consistent behavior |
-| Subtask depth | Maximum nesting depth for sub-agents | 2 | Keep at 2 unless you need deep delegation |
+| 连续错误限制 | 代理停止前的最大连续工具错误数 | 3 | 保持为 3。防止无限错误循环。 |
+| 速率限制 | API 调用之间的最小毫秒数 | 0 | 如果遇到速率限制则设置为 500-1000 |
+| 最大迭代次数 | 每次对话轮次的最大工具调用数 | 25 | 复杂任务增加，限制成本则减少 |
+| 上下文压缩 | 当上下文变长时总结旧消息 | 开启 | 保持开启。防止上下文溢出错误。 |
+| 压缩阈值 | 触发压缩的上下文窗口百分比 | 70% | 如果看到 400 错误上下文溢出则降低 |
+| 动力转向 | 每 N 条消息重新注入关键指令 | 4 | 保持为 4 以获得一致的行为 |
+| 子任务深度 | 子代理的最大嵌套深度 | 2 | 除非需要深度委托，否则保持为 2 |
 
-## Memory
+## 记忆
 
-Configure how the agent remembers across conversations.
+配置代理如何跨对话记忆。
 
-| Setting | What it does | Default | Recommendation |
+| 设置 | 功能 | 默认值 | 建议 |
 |---------|-------------|---------|----------------|
-| Chat history | Save conversation history for future reference | On | Keep on. Required for memory extraction. |
-| Chat history folder | Where to store conversation files in the vault | `Obsilo/Chats` | Change if you prefer a different location |
-| Memory extraction | Automatically extract key facts from conversations | On | Keep on for personalization |
-| Memory model | Which model to use for memory extraction (background task) | Global model | Use a cheap model (Haiku, GPT-4o-mini) to save cost |
-| Memory threshold | Minimum relevance score for a memory to be saved | 0.7 | Lower for more memories, raise for fewer but higher quality |
+| 聊天历史 | 保存对话历史以供将来参考 | 开启 | 保持开启。记忆提取所需。 |
+| 聊天历史文件夹 | 在保险库中存储对话文件的位置 | `Obsilo/Chats` | 如果偏好其他位置可更改 |
+| 记忆提取 | 自动从对话中提取关键事实 | 开启 | 保持开启以实现个性化 |
+| 记忆模型 | 用于记忆提取的模型（后台任务） | 全局模型 | 使用便宜模型（Haiku、GPT-4o-mini）以节省成本 |
+| 记忆阈值 | 保存记忆的最小相关性分数 | 0.7 | 降低以获得更多记忆，升高以获得更少但更高质量的记忆 |
 
-## Rules
+## 规则
 
-Persistent instructions that guide the agent in every conversation.
+指导代理在每个对话中的持久指令。
 
-| Setting | What it does | Default | Recommendation |
+| 设置 | 功能 | 默认值 | 建议 |
 |---------|-------------|---------|----------------|
-| Rule list | All active rules injected into the system prompt | Empty | Add rules for your writing style, vault conventions |
-| + add rule | Create a new rule (plain text or Markdown) | -- | Keep rules concise and specific |
-| Import | Import rules from a file | -- | Share rules across vaults |
+| 规则列表 | 注入系统提示的所有活动规则 | 空 | 添加关于写作风格、保险库约定的规则 |
+| + 添加规则 | 创建新规则（纯文本或 Markdown） | -- | 保持规则简洁且具体 |
+| 导入 | 从文件导入规则 | -- | 跨保险库共享规则 |
 
-## Workflows & prompts
+## 工作流和提示
 
-Pre-defined multi-step instructions and prompt templates.
+预定义的多步指令和提示模板。
 
-| Setting | What it does | Default | Recommendation |
+| 设置 | 功能 | 默认值 | 建议 |
 |---------|-------------|---------|----------------|
-| Workflows | Slash-command triggered instruction sequences (type `/` in chat) | Built-in defaults | Create workflows for your repeated tasks |
-| Prompts | Reusable message templates with optional variables | Empty | Create prompts for common questions |
+| 工作流 | 斜杠命令触发的指令序列（在聊天中输入 `/`） | 内置默认 | 为重复任务创建工作流 |
+| 提示 | 带可选变量的可重用消息模板 | 空 | 为常见问题创建提示 |
 
-## Skills
+## 技能
 
-Persistent instruction sets matched by keywords. Like mini-manuals the agent follows.
+通过关键字匹配的持久指令集。像代理遵循的迷你手册。
 
-| Setting | What it does | Default | Recommendation |
+| 设置 | 功能 | 默认值 | 建议 |
 |---------|-------------|---------|----------------|
-| Skill list | All skills with name, trigger pattern, and body | Built-in defaults | Add skills for domain-specific tasks |
-| + add skill | Create a new skill | -- | Include a clear trigger pattern and step-by-step instructions |
+| 技能列表 | 所有技能，包含名称、触发模式和内容 | 内置默认 | 为特定领域任务添加技能 |
+| + 添加技能 | 创建新技能 | -- | 包含清晰的触发模式和分步说明 |
 
-## Interface
+## 界面
 
-Appearance and input behavior settings.
+外观和输入行为设置。
 
-| Setting | What it does | Default | Recommendation |
+| 设置 | 功能 | 默认值 | 建议 |
 |---------|-------------|---------|----------------|
-| Auto-add active file | Automatically include the currently open note as context | On | Keep on. Helps the agent understand what you're looking at. |
-| Send key | Which key sends a message (Enter or Ctrl/Cmd+Enter) | Enter | Change to Ctrl+Enter if you write multi-line messages often |
-| Show date/time | Display timestamps in the chat | Off | Personal preference |
-| Chat history folder | Vault folder for saved conversations | `Obsilo/Chats` | Also configurable in Memory tab |
-| Chat linking | Link chat sessions to notes for traceability | Off | Enable for project-based workflows |
-| Task extraction | Detect and extract tasks from agent responses | Off | Enable to auto-create tasks from conversations |
+| 自动添加活动文件 | 自动将当前打开的笔记作为上下文 | 开启 | 保持开启。帮助代理理解您正在查看的内容。 |
+| 发送键 | 发送消息的按键（Enter 或 Ctrl/Cmd+Enter） | Enter | 如果经常写多行消息则更改为 Ctrl+Enter |
+| 显示日期/时间 | 在聊天中显示时间戳 | 关闭 | 个人偏好 |
+| 聊天历史文件夹 | 保存对话的保险库文件夹 | `Obsilo/Chats` | 也可以在记忆选项卡中配置 |
+| 聊天链接 | 链接聊天会话到笔记以实现可追溯性 | 关闭 | 为基于项目的工作流程启用 |
+| 任务提取 | 从代理响应中检测和提取任务 | 关闭 | 启用以从对话中自动创建任务 |
 
-## Shell (plugin API & recipes)
+## Shell（插件 API 和配方）
 
-Configure external tool integrations.
+配置外部工具集成。
 
-| Setting | What it does | Default | Recommendation |
+| 设置 | 功能 | 默认值 | 建议 |
 |---------|-------------|---------|----------------|
-| Plugin API | Allow the agent to call JavaScript APIs on other plugins | Off | Enable if you use Dataview, Omnisearch, or similar |
-| Command allowlist | Which Obsidian commands the agent can execute | None | Add specific command IDs you trust |
-| Recipes | Pre-validated CLI tool recipes (e.g., Pandoc export) | Built-in | Add recipes only for tools you have installed |
+| 插件 API | 允许代理调用其他插件的 JavaScript API | 关闭 | 如果使用 Dataview、Omnisearch 或类似插件则启用 |
+| 命令白名单 | 代理可以执行的 Obsidian 命令 | 无 | 添加您信任的特定命令 ID |
+| 配方 | 预验证的 CLI 工具配方（例如 Pandoc 导出） | 内置 | 仅为您已安装的工具添加配方 |
 
-## Vault (checkpoints)
+## 保险库（检查点）
 
-Checkpoint and snapshot settings for the undo system.
+撤销系统的检查点和快照设置。
 
-| Setting | What it does | Default | Recommendation |
+| 设置 | 功能 | 默认值 | 建议 |
 |---------|-------------|---------|----------------|
-| Enable checkpoints | Create snapshots before file modifications | On | Keep on. This powers the undo system. |
-| Snapshot timeout | Maximum time to wait for a snapshot to complete (ms) | 5000 | Increase for very large files |
-| Auto-cleanup | Automatically remove old checkpoints | On | Keep on to save storage |
+| 启用检查点 | 文件修改前创建快照 | 开启 | 保持开启。这为撤销系统提供支持。 |
+| 快照超时 | 等待快照完成的最大时间（毫秒） | 5000 | 对于非常大的文件增加此值 |
+| 自动清理 | 自动删除旧检查点 | 开启 | 保持开启以节省存储空间 |
 
-## Other tabs
+## 其他选项卡
 
-| Tab | What it does |
+| 选项卡 | 功能 |
 |-----|-------------|
-| Log | Browse the daily audit trail of all tool calls with timestamps and parameters |
-| Debug | Internal diagnostics: ring buffer viewer, system prompt preview |
-| Backup | Export and import your complete Obsilo configuration |
-| Language | Set the agent's response language (follows Obsidian's language by default) |
-| Visual Intelligence | Enable LibreOffice-based rendering for presentation quality checks |
+| 日志 | 浏览所有工具调用的每日审计跟踪，包含时间戳和参数 |
+| 调试 | 内部诊断：环形缓冲区查看器、系统提示预览 |
+| 备份 | 导出和导入完整的 Obsilo 配置 |
+| 语言 | 设置代理的响应语言（默认跟随 Obsidian 的语言） |
+| 视觉智能 | 启用基于 LibreOffice 的渲染以进行演示质量检查 |
