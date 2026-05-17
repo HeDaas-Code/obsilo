@@ -92,7 +92,7 @@ Setup:
 4. 选择模型后即可使用流式对话、函数调用（tool use）与扩展思维
 
 :::tip Latest fork update
-MiniMax provider in this fork now includes multilingual translation support, function calling, and browser-compatible request handling improvements.
+Added in fork update (2026-04, commit `c9692ae`): MiniMax provider now includes multilingual translation support, function calling, and browser-compatible request handling improvements.
 :::
 
 ### Azure OpenAI

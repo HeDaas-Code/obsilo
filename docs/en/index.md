@@ -10,4 +10,4 @@ This directory keeps the original English docs for this fork.
 - Tutorials: [/en/tutorials/getting-started](/en/tutorials/getting-started)
 - Guides: [/en/guides/capabilities](/en/guides/capabilities)
 - Reference: [/en/reference/tools](/en/reference/tools)
-- Concepts: [/en/concepts/](/en/concepts/)
+- Concepts: [/en/concepts/index](/en/concepts/index)
