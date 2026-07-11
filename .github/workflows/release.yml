@@ -1,12 +1,15 @@
 name: Release
 
 on:
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version number (e.g. 1.0.0 — must match manifest.json)'
+        description: 'Version number (e.g. 2.4.3 — must match manifest.json)'
         required: true
-        default: '1.0.0'
+        default: '2.4.3'
 
 jobs:
   release:
@@ -23,6 +26,28 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Derive version
+        id: ver
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            # tag 触发: refs/tags/v2.4.3 -> 2.4.3
+            VER="${GITHUB_REF#refs/tags/v}"
+          else
+            # 手动触发
+            VER="${{ inputs.version }}"
+          fi
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: $VER"
+
+      - name: Verify version matches manifest.json
+        run: |
+          MANIFEST_VER=$(jq -r .version manifest.json)
+          if [ "$MANIFEST_VER" != "${{ steps.ver.outputs.version }}" ]; then
+            echo "::error::Version mismatch — tag/input is '${{ steps.ver.outputs.version }}' but manifest.json is '$MANIFEST_VER'"
+            exit 1
+          fi
+          echo "Version OK: $MANIFEST_VER"
+
       - name: Install dependencies
         run: |
           rm -f package-lock.json
@@ -31,29 +56,75 @@ jobs:
           npm install @rollup/rollup-linux-x64-gnu --no-audit --no-fund --no-save
 
       - name: Build plugin
+        # CI 环境无 PLUGIN_DIR，esbuild 的 vault-deploy 插件会自动跳过本地拷贝
         run: node esbuild.config.mjs production
 
       - name: Verify build output
         run: |
-          ls -lh main.js manifest.json styles.css
+          ls -lh main.js manifest.json styles.css sandbox-worker.js mcp-server-worker.js
           echo "manifest version: $(jq -r .version manifest.json)"
 
-      - name: Create GitHub Release with assets
+      - name: Stage release assets
+        run: |
+          STAGE="obsilo-agent"
+          mkdir -p "$STAGE/templates"
+          # Core trio (BRAT 兼容)
+          cp main.js manifest.json styles.css "$STAGE/"
+          # Workers (沙箱 + MCP)
+          cp sandbox-worker.js mcp-server-worker.js "$STAGE/"
+          # Logo
+          [ -f src/assets/logo.png ] && cp src/assets/logo.png "$STAGE/"
+          # WASM (sql.js — 知识库向量索引)
+          for f in sql-wasm.wasm sql-wasm-browser.wasm; do
+            [ -f "node_modules/sql.js/dist/$f" ] && cp "node_modules/sql.js/dist/$f" "$STAGE/"
+          done
+          # WASM (onnxruntime-web — 重排序模型)
+          for f in ort-wasm-simd-threaded.wasm ort-wasm-simd-threaded.mjs; do
+            [ -f "node_modules/onnxruntime-web/dist/$f" ] && cp "node_modules/onnxruntime-web/dist/$f" "$STAGE/"
+          done
+          # Bundled skills
+          if [ -d bundled-skills ]; then
+            cp -r bundled-skills "$STAGE/skills"
+          fi
+          # PPTX templates
+          if ls assets/templates/*.pptx 1>/dev/null 2>&1; then
+            cp assets/templates/*.pptx "$STAGE/templates/"
+          fi
+          echo "=== Staged files ==="
+          find "$STAGE" -type f | sort
+
+      - name: Create zip archive
+        run: |
+          zip -r "obsilo-agent-${{ steps.ver.outputs.version }}.zip" obsilo-agent
+          ls -lh "obsilo-agent-${{ steps.ver.outputs.version }}.zip"
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ inputs.version }}
-          name: ${{ inputs.version }}
+          tag_name: v${{ steps.ver.outputs.version }}
+          name: v${{ steps.ver.outputs.version }}
           body: |
-            ## Obsilo Agent v${{ inputs.version }}
+            ## Obsilo Agent v${{ steps.ver.outputs.version }}
 
-            Install via [BRAT](https://github.com/TfTHacker/obsidian42-brat):
-            1. Install BRAT from Community Plugins
-            2. BRAT → Add Beta Plugin → `https://github.com/pssah4/obsilo`
+            ### BRAT 安装（推荐）
+            1. 安装 [BRAT](https://github.com/TfTHacker/obsidian42-brat)
+            2. BRAT → Add Beta Plugin → `https://github.com/${{ github.repository }}`
+            3. 设置 > 社区插件 > 启用 "Obsilo Agent"
 
-            Or install manually: download `main.js`, `manifest.json`, `styles.css` and place them in `.obsidian/plugins/obsilo-agent/`.
+            ### 手动安装（完整功能）
+            下载 `obsilo-agent-${{ steps.ver.outputs.version }}.zip`，解压后会得到 `obsilo-agent/` 目录，将其整体移动到：
+            ```
+            <vault>/.obsidian/plugins/
+            ```
+            然后在 Obsidian 中启用插件。
+
+            > 仅下载 `main.js`、`manifest.json`、`styles.css` 可用于 BRAT 更新；沙箱、MCP、语义搜索等功能需要 workers 与 WASM 文件，请使用完整 zip。
           files: |
             main.js
             manifest.json
             styles.css
+            sandbox-worker.js
+            mcp-server-worker.js
+            obsilo-agent-${{ steps.ver.outputs.version }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
